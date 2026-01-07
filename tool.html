@@ -5,27 +5,29 @@
 <title>Generator Ringkasan Materi SMP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+</script>
 
 <style>
 body { font-family: Arial, sans-serif; background:#f4f6fa; padding:20px; }
 .container { max-width:900px; background:#fff; padding:20px; border-radius:8px; }
-h1 { font-size:22px; }
-label { font-weight:bold; margin-top:15px; display:block; }
-select, input, button, textarea {
-  width:100%; margin-top:8px; padding:10px;
+label { font-weight:bold; display:block; margin-top:15px; }
+input, select, button, textarea {
+  width:100%; padding:10px; margin-top:8px;
 }
 button { background:#2e7dff; color:#fff; border:none; cursor:pointer; }
-button:hover { background:#1c5ed8; }
-textarea { height:230px; }
+textarea { height:220px; }
 .note { font-size:13px; color:#555; margin-top:10px; }
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>Generator Ringkasan Materi SMP</h1>
+
+<h2>Generator Ringkasan Materi SMP</h2>
 
 <label>Kelas</label>
 <select id="kelas">
@@ -51,83 +53,74 @@ textarea { height:230px; }
 <label>Hasil Ringkasan</label>
 <textarea id="output" placeholder="Ringkasan akan muncul di sini..."></textarea>
 
-<button onclick="copyText()">Salin Ringkasan</button>
-
 <p class="note">
-Tool ini membantu merangkum materi pelajaran untuk pemahaman belajar, bukan pengganti pembelajaran di sekolah.
+Tool ini membantu meringkas materi pelajaran, bukan pengganti pembelajaran di sekolah.
 </p>
+
 </div>
 
 <script>
-const stopWords = [
-  "dan","yang","di","ke","dari","adalah","ini","itu","dengan",
-  "untuk","pada","sebagai","oleh","karena","atau","juga","dalam"
-];
+const stopWords = ["dan","yang","di","ke","dari","adalah","ini","itu","dengan","untuk","pada"];
 
 async function processPDF() {
-  const file = document.getElementById("pdfFile").files[0];
-  if (!file) return alert("Upload PDF terlebih dahulu.");
+  const fileInput = document.getElementById("pdfFile");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Silakan pilih file PDF terlebih dahulu.");
+    return;
+  }
 
   const reader = new FileReader();
   reader.readAsArrayBuffer(file);
 
   reader.onload = async function() {
     const pdf = await pdfjsLib.getDocument({ data: reader.result }).promise;
-    let text = "";
+    let fullText = "";
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      content.items.forEach(item => text += item.str + " ");
+      content.items.forEach(item => fullText += item.str + " ");
     }
 
-    smartSummarize(text);
+    smartSummarize(fullText);
   };
 }
 
 function smartSummarize(text) {
-  text = text.toLowerCase().replace(/\s+/g," ");
+  text = text.toLowerCase();
+  let sentences = text.match(/[^.!?]+[.!?]+/g) || [];
 
-  let sentences = text.match(/[^.!?]+[.!?]+/g);
-  if (!sentences) return;
-
-  let wordFreq = {};
-  sentences.forEach(sentence => {
-    sentence.split(" ").forEach(word => {
-      word = word.replace(/[^a-zA-Z]/g,"");
-      if (word.length > 3 && !stopWords.includes(word)) {
-        wordFreq[word] = (wordFreq[word] || 0) + 1;
+  let freq = {};
+  sentences.forEach(s => {
+    s.split(" ").forEach(w => {
+      w = w.replace(/[^a-z]/g,"");
+      if (w.length > 3 && !stopWords.includes(w)) {
+        freq[w] = (freq[w] || 0) + 1;
       }
     });
   });
 
-  let sentenceScore = sentences.map(sentence => {
+  let scored = sentences.map(s => {
     let score = 0;
-    sentence.split(" ").forEach(word => {
-      word = word.replace(/[^a-zA-Z]/g,"");
-      if (wordFreq[word]) score += wordFreq[word];
+    s.split(" ").forEach(w => {
+      w = w.replace(/[^a-z]/g,"");
+      if (freq[w]) score += freq[w];
     });
-    return { sentence, score };
+    return { s, score };
   });
 
-  sentenceScore.sort((a,b) => b.score - a.score);
-  let summary = sentenceScore.slice(0,6)
-    .map(s => "- " + s.sentence.trim())
-    .join("\n");
+  scored.sort((a,b)=>b.score-a.score);
+  let summary = scored.slice(0,6).map(x=>"• "+x.s.trim()).join("\n");
 
-  output.value =
+  document.getElementById("output").value =
 `Ringkasan Materi (${mapel.value} - ${kelas.value})
 
 ${summary}
 
 Kesimpulan:
-Materi ini membahas konsep penting yang perlu dipahami siswa SMP.`;
-}
-
-function copyText() {
-  output.select();
-  document.execCommand("copy");
-  alert("Ringkasan berhasil disalin.");
+Materi ini berisi konsep penting yang perlu dipahami siswa SMP.`;
 }
 </script>
 
