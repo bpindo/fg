@@ -141,34 +141,49 @@ let posts=[];
 /* SLUG */
 
 function slugify(text){
-
-return text
-.toString()
-.toLowerCase()
-.trim()
-.replace(/\s+/g,"-")
-.replace(/[^\w\-]+/g,"");
-
+return text.toString().toLowerCase().trim().replace(/\s+/g,"-").replace(/[^\w\-]+/g,"");
 }
 
 
 /* HITUNG KOMENTAR */
 
 function countAllComments(comments){
-
 let count=0;
 
 comments.forEach(c=>{
-
 count+=1;
 
 if(c.replies && c.replies.length>0){
 count+=countAllComments(c.replies);
 }
-
 });
 
 return count;
+}
+
+
+/* BUAT SLUG KOMENTAR */
+
+function assignCommentSlug(post){
+
+function loop(comments){
+
+comments.forEach(c=>{
+
+if(!c.slug){
+const time=Date.now();
+c.slug=`re-${slugify(post.author)}-${time}`;
+}
+
+if(c.replies){
+loop(c.replies);
+}
+
+});
+
+}
+
+loop(post.comments);
 
 }
 
@@ -182,21 +197,31 @@ let html="";
 comments.forEach(c=>{
 
 html+=`
+
 <div class="comment-card">
 
-<div class="comment-author">${c.author || "Anonymous"}</div>
+<div class="comment-author">@${c.author}</div>
 
-<div class="comment-text">${c.text}</div>
+<div class="comment-text">
+
+<a onclick="openComment('${c.author}','${c.slug}')">
+${c.text}
+</a>
 
 </div>
+
+</div>
+
 `;
 
 if(c.replies && c.replies.length>0){
 
 html+=`
+
 <div class="comment-reply">
 ${renderComments(c.replies)}
 </div>
+
 `;
 
 }
@@ -229,6 +254,8 @@ p.slug=slugify(p.judul || "post");
 
 if(!p.comments) p.comments=[];
 
+assignCommentSlug(p);
+
 });
 
 render();
@@ -251,7 +278,6 @@ document.getElementById("content").innerHTML="Gagal ambil data";
 function getRoute(){
 
 const hash=window.location.hash.replace("#","");
-
 const parts=hash.split("/").filter(Boolean);
 
 if(parts.length===0){
@@ -266,11 +292,21 @@ author:parts[0].replace("@","")
 }
 
 if(parts.length===2 && parts[0].startsWith("@")){
+
+if(parts[1].startsWith("re-")){
+return{
+type:"comment",
+author:parts[0].replace("@",""),
+slug:parts[1]
+};
+}
+
 return{
 type:"post",
 author:parts[0].replace("@",""),
 slug:parts[1]
 };
+
 }
 
 return {type:"home"};
@@ -318,7 +354,6 @@ const list=posts.filter(p=>slugify(p.author)===slugify(author));
 let html=`<div class="post-card">
 
 <h2>@${author}</h2>
-
 <p>${list.length} Post</p>
 
 </div>
@@ -342,7 +377,6 @@ html+=`
 });
 
 html+="</ul>";
-
 html+=`<button onclick="goHome()">Home</button>`;
 
 document.getElementById("content").innerHTML=html;
@@ -357,10 +391,8 @@ function renderPost(author,slug){
 const post=posts.find(p=>slugify(p.author)===slugify(author) && p.slug===slug);
 
 if(!post){
-
 document.getElementById("content").innerHTML="Post tidak ditemukan";
 return;
-
 }
 
 let html=`
@@ -399,24 +431,91 @@ document.getElementById("content").innerHTML=html;
 }
 
 
+/* HALAMAN KOMENTAR */
+
+function renderComment(author,slug){
+
+let found=null;
+let parent=null;
+
+posts.forEach(p=>{
+
+function search(comments){
+
+comments.forEach(c=>{
+
+if(c.slug===slug){
+found=c;
+parent=p;
+}
+
+if(c.replies){
+search(c.replies);
+}
+
+});
+
+}
+
+search(p.comments);
+
+});
+
+if(!found){
+
+document.getElementById("content").innerHTML="Komentar tidak ditemukan";
+return;
+
+}
+
+let html=`
+
+<div class="post-card">
+
+<h2>Komentar oleh @${found.author}</h2>
+
+<p>${found.text}</p>
+
+<p style="color:#6b7280">
+
+Balasan dari post:
+
+<span class="author-link"
+onclick="openPost('${parent.author}','${parent.slug}')">
+
+${parent.judul}
+
+</span>
+
+</p>
+
+<button onclick="goHome()">Home</button>
+
+</div>
+
+`;
+
+document.getElementById("content").innerHTML=html;
+
+}
+
+
 /* NAVIGATION */
 
 function openPost(author,slug){
-
 window.location.hash=`@${slugify(author)}/${slug}`;
-
 }
 
 function openAuthor(author){
-
 window.location.hash=`@${slugify(author)}`;
+}
 
+function openComment(author,slug){
+window.location.hash=`@${slugify(author)}/${slug}`;
 }
 
 function goHome(){
-
 window.location.hash="";
-
 }
 
 
@@ -427,10 +526,9 @@ function render(){
 const route=getRoute();
 
 if(route.type==="home") renderHome();
-
 if(route.type==="author") renderAuthor(route.author);
-
 if(route.type==="post") renderPost(route.author,route.slug);
+if(route.type==="comment") renderComment(route.author,route.slug);
 
 }
 
@@ -443,6 +541,5 @@ window.addEventListener("hashchange",render);
 fetchPosts();
 
 </script>
-
 </body>
 </html>
