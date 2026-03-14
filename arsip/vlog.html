@@ -3,50 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Viewer Vlog - GAS</title>
+<title>Mini Viewer Post</title>
 <style>
-body{font-family:system-ui;margin:12px;background:#f4f4f4}
-.card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:12px}
-h1{font-size:18px;margin-bottom:6px}
-p{font-size:14px;margin-bottom:6px}
-a{color:#2563eb;text-decoration:none;font-weight:600}
+body{font-family:system-ui;background:#f4f4f4;margin:0;padding:12px}
+.container{max-width:600px;margin:auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+h2{color:#2563eb;margin-bottom:6px}
+p{color:#374151;margin-bottom:8px}
+a{color:#10b981;text-decoration:none}
 </style>
 </head>
 <body>
-<div id="postContainer"></div>
+<div class="container" id="post-container">
+<h2>Memuat post...</h2>
+</div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
-const params = new URLSearchParams(window.location.search);
-const postId = params.get('post'); // ex: post-1773470906552-4223
+function getPostIdFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get('post'); // misal post=post-1773470906552-4223
+}
 
 async function loadPost(){
+  const container = document.getElementById('post-container');
   try{
-    const resp = await fetch(GAS_URL, {method:"POST", body: JSON.stringify({read:true})});
+    const resp = await fetch(GAS_URL, {method:'POST', body: JSON.stringify({read:true})});
     const data = await resp.json();
-    const posts = data || [];
 
-    const post = posts.find(p => p.id === postId);
-    const container = document.getElementById('postContainer');
-
-    if(post){
-      container.innerHTML = `
-        <div class="card">
-          <h1>${post.judul}</h1>
-          ${post.ket ? `<p>${post.ket}</p>` : ""}
-          <p>Author: <strong>${post.author}</strong></p>
-          <p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>
-          <p>Waktu: ${new Date(post.createdAt).toLocaleString('id-ID')}</p>
-        </div>
-      `;
-    } else {
-      container.innerHTML = "<p>Post tidak ditemukan.</p>";
+    if(!data || data.length === 0){
+      container.innerHTML = "<p>Data kosong.</p>";
+      return;
     }
 
-  } catch(e){
-    console.error(e);
-    document.getElementById('postContainer').innerHTML = "<p>Gagal ambil data dari server.</p>";
+    const postIdParam = getPostIdFromURL();
+
+    // Cari post yang cocok dengan postId (jika ada)
+    let post = data.find(p => p.id === postIdParam);
+
+    // Jika tidak ada, ambil post pertama
+    if(!post) post = data[0];
+
+    container.innerHTML = `
+      <h2>${post.judul}</h2>
+      <p>${post.ket || ""}</p>
+      <p><strong>Author:</strong> ${post.author || "Anonim"}</p>
+      <p><a href="${post.link}" target="_blank">Buka Link</a></p>
+      <p><em>Waktu: ${new Date(post.createdAt).toLocaleString()}</em></p>
+    `;
+
+  }catch(err){
+    console.error(err);
+    container.innerHTML = "<p>Gagal memuat data post.</p>";
   }
 }
 
