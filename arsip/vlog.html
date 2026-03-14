@@ -3,96 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Vlog Post</title>
+<title>Mini Viewer Post</title>
 <style>
-body{font-family:system-ui,sans-serif;margin:0;padding:12px;background:#f2f4f8}
-a{color:#2563eb;text-decoration:none}
-a:hover{text-decoration:underline}
-h1{text-align:center;color:#111827}
-.post-card{background:#fff;padding:12px;margin-bottom:12px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-.post-title{font-weight:700;font-size:16px;margin-bottom:6px;cursor:pointer}
-.post-desc{font-size:14px;color:#4b5563;margin-bottom:4px}
-.post-link{font-size:14px;color:#10b981}
+body{font-family:system-ui;background:#f2f4f8;margin:0;padding:12px}
+.container{max-width:600px;margin:auto}
+h1{text-align:center;color:#1f2937;margin-bottom:20px}
+ul{list-style:none;padding:0}
+li{background:#fff;padding:12px;margin-bottom:8px;border-radius:8px;cursor:pointer;transition:.2s}
+li:hover{background:#2563eb;color:#fff}
+.post-card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+button{margin-top:12px;padding:10px 14px;border:none;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;font-weight:600}
+a{color:#2563eb;text-decoration:underline}
 </style>
 </head>
 <body>
-
-<div id="main-container"></div>
+<div class="container">
+<h1>Mini Viewer Post</h1>
+<div id="content"></div>
+</div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
+let posts = [];
 
-// Utility: slugify
+// Fungsi membuat slug dari judul
 function slugify(text){
   return text.toString().toLowerCase()
-    .replace(/\s+/g,'-')
-    .replace(/[^\w\-]+/g,'')
-    .replace(/\-\-+/g,'-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+    .trim()
+    .replace(/[\s]+/g,'-')
+    .replace(/[^\w\-]+/g,'');
 }
 
-// Ambil slug dari URL
-function getSlugFromURL(){
-  const params = new URLSearchParams(window.location.search);
-  return params.get('slug');
-}
-
-// Format tanggal WIB
-function formatWIB(dateStr){
-  const date = new Date(dateStr);
-  const wibDate = new Date(date.getTime() + 7*60*60*1000);
-  const day = String(wibDate.getDate()).padStart(2,'0');
-  const month = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"][wibDate.getMonth()];
-  const year = wibDate.getFullYear();
-  const hours = String(wibDate.getHours()).padStart(2,'0');
-  const mins = String(wibDate.getMinutes()).padStart(2,'0');
-  return `${day}-${month}-${year} ${hours}:${mins}`;
-}
-
-// Render halaman
-async function renderPage(){
-  let resp = await fetch(GAS_URL, {method:"POST", body: JSON.stringify({read:true})});
-  let posts = await resp.json() || [];
-
-  // Tambahkan slug ke setiap post
-  posts.forEach(p => { if(!p.slug) p.slug = slugify(p.judul); });
-
-  const container = document.getElementById('main-container');
-  const slug = getSlugFromURL();
-
-  if(slug){
-    // Render single post
-    const post = posts.find(p => p.slug === slug);
-    if(post){
-      container.innerHTML = `
-        <h1>${post.judul}</h1>
-        <p class="post-desc">${post.ket || ''}</p>
-        <a class="post-link" href="${post.link}" target="_blank">Buka Link</a>
-        <p style="margin-top:12px;"><a href="index.html">← Kembali ke Semua Post</a></p>
-      `;
-    } else {
-      container.innerHTML = `<p>Post tidak ditemukan. <a href="index.html">Kembali</a></p>`;
-    }
-  } else {
-    // Render list semua post
-    let html = `<h1>Daftar Post</h1>`;
-    posts.forEach(p => {
-      html += `
-        <div class="post-card">
-          <a class="post-title" href="?slug=${p.slug}">${p.judul}</a>
-          ${p.ket ? `<p class="post-desc">${p.ket}</p>` : ''}
-          <p class="post-desc">Author: ${p.author} • ${formatWIB(p.createdAt)}</p>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
+// Fetch semua post
+async function fetchPosts(){
+  try{
+    const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify({read:true})});
+    const data = await resp.json();
+    posts = data || [];
+    posts.forEach(p => p.slug = slugify(p.judul || "post-" + Math.random()));
+    render();
+  } catch(err){
+    console.error(err);
+    document.getElementById("content").innerHTML="<p>Gagal ambil data.</p>";
   }
 }
 
-// Jalankan
-renderPage();
-</script>
+// Render halaman sesuai hash
+function render(){
+  const hash = window.location.hash.replace('#','');
+  if(hash){
+    // Tampilkan detail post
+    const post = posts.find(p=>p.slug===hash);
+    if(post){
+      document.getElementById("content").innerHTML = `
+        <div class="post-card">
+          <h2>${post.judul}</h2>
+          ${post.ket?`<p>${post.ket}</p>`:""}
+          ${post.link?`<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`:""}
+          <button onclick="goBack()">Kembali</button>
+        </div>
+      `;
+    } else {
+      document.getElementById("content").innerHTML="<p>Post tidak ditemukan.</p><button onclick='goBack()'>Kembali</button>";
+    }
+  } else {
+    // Tampilkan daftar post
+    let html="<ul>";
+    posts.forEach(p=>{
+      html+=`<li onclick="openPost('${p.slug}')">${p.judul}</li>`;
+    });
+    html+="</ul>";
+    document.getElementById("content").innerHTML = html;
+  }
+}
 
+// Fungsi buka post
+function openPost(slug){
+  window.location.hash = slug;
+  render();
+}
+
+// Fungsi kembali ke daftar
+function goBack(){
+  window.location.hash="";
+  render();
+}
+
+// Listen hash change (misal reload halaman dengan hash)
+window.addEventListener("hashchange", render);
+
+// Inisialisasi
+fetchPosts();
+</script>
 </body>
 </html>
