@@ -267,6 +267,13 @@ let posts = [];
 let currentPage = 1;
 let perPage = 10;
 
+// Ambil postId dari URL
+function getPostIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('post'); // misal URL: index.html?post=post-1773470906552-4223
+}
+
+
 // FETCH DATA DARI GAS
 async function fetchPosts(){
   try{
