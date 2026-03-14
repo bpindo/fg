@@ -3,62 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Viewer Post</title>
+<title>Mini Vlog Post</title>
 <style>
-body{font-family:system-ui;background:#f4f4f4;margin:0;padding:12px}
-.container{max-width:600px;margin:auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.1)}
-h2{color:#2563eb;margin-bottom:6px}
-p{color:#374151;margin-bottom:8px}
-a{color:#10b981;text-decoration:none}
+body{font-family:system-ui,sans-serif;margin:0;padding:12px;background:#f2f4f8}
+a{color:#2563eb;text-decoration:none}
+a:hover{text-decoration:underline}
+h1{text-align:center;color:#111827}
+.post-card{background:#fff;padding:12px;margin-bottom:12px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.post-title{font-weight:700;font-size:16px;margin-bottom:6px;cursor:pointer}
+.post-desc{font-size:14px;color:#4b5563;margin-bottom:4px}
+.post-link{font-size:14px;color:#10b981}
 </style>
 </head>
 <body>
-<div class="container" id="post-container">
-<h2>Memuat post...</h2>
-</div>
+
+<div id="main-container"></div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
-function getPostIdFromURL(){
-  const params = new URLSearchParams(window.location.search);
-  return params.get('post'); // misal post=post-1773470906552-4223
+// Utility: slugify
+function slugify(text){
+  return text.toString().toLowerCase()
+    .replace(/\s+/g,'-')
+    .replace(/[^\w\-]+/g,'')
+    .replace(/\-\-+/g,'-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
-async function loadPost(){
-  const container = document.getElementById('post-container');
-  try{
-    const resp = await fetch(GAS_URL, {method:'POST', body: JSON.stringify({read:true})});
-    const data = await resp.json();
+// Ambil slug dari URL
+function getSlugFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get('slug');
+}
 
-    if(!data || data.length === 0){
-      container.innerHTML = "<p>Data kosong.</p>";
-      return;
+// Format tanggal WIB
+function formatWIB(dateStr){
+  const date = new Date(dateStr);
+  const wibDate = new Date(date.getTime() + 7*60*60*1000);
+  const day = String(wibDate.getDate()).padStart(2,'0');
+  const month = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"][wibDate.getMonth()];
+  const year = wibDate.getFullYear();
+  const hours = String(wibDate.getHours()).padStart(2,'0');
+  const mins = String(wibDate.getMinutes()).padStart(2,'0');
+  return `${day}-${month}-${year} ${hours}:${mins}`;
+}
+
+// Render halaman
+async function renderPage(){
+  let resp = await fetch(GAS_URL, {method:"POST", body: JSON.stringify({read:true})});
+  let posts = await resp.json() || [];
+
+  // Tambahkan slug ke setiap post
+  posts.forEach(p => { if(!p.slug) p.slug = slugify(p.judul); });
+
+  const container = document.getElementById('main-container');
+  const slug = getSlugFromURL();
+
+  if(slug){
+    // Render single post
+    const post = posts.find(p => p.slug === slug);
+    if(post){
+      container.innerHTML = `
+        <h1>${post.judul}</h1>
+        <p class="post-desc">${post.ket || ''}</p>
+        <a class="post-link" href="${post.link}" target="_blank">Buka Link</a>
+        <p style="margin-top:12px;"><a href="index.html">← Kembali ke Semua Post</a></p>
+      `;
+    } else {
+      container.innerHTML = `<p>Post tidak ditemukan. <a href="index.html">Kembali</a></p>`;
     }
-
-    const postIdParam = getPostIdFromURL();
-
-    // Cari post yang cocok dengan postId (jika ada)
-    let post = data.find(p => p.id === postIdParam);
-
-    // Jika tidak ada, ambil post pertama
-    if(!post) post = data[0];
-
-    container.innerHTML = `
-      <h2>${post.judul}</h2>
-      <p>${post.ket || ""}</p>
-      <p><strong>Author:</strong> ${post.author || "Anonim"}</p>
-      <p><a href="${post.link}" target="_blank">Buka Link</a></p>
-      <p><em>Waktu: ${new Date(post.createdAt).toLocaleString()}</em></p>
-    `;
-
-  }catch(err){
-    console.error(err);
-    container.innerHTML = "<p>Gagal memuat data post.</p>";
+  } else {
+    // Render list semua post
+    let html = `<h1>Daftar Post</h1>`;
+    posts.forEach(p => {
+      html += `
+        <div class="post-card">
+          <a class="post-title" href="?slug=${p.slug}">${p.judul}</a>
+          ${p.ket ? `<p class="post-desc">${p.ket}</p>` : ''}
+          <p class="post-desc">Author: ${p.author} • ${formatWIB(p.createdAt)}</p>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
   }
 }
 
-loadPost();
+// Jalankan
+renderPage();
 </script>
+
 </body>
 </html>
