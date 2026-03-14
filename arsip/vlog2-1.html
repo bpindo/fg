@@ -15,7 +15,7 @@ padding:12px;
 }
 
 .container{
-max-width:600px;
+max-width:640px;
 margin:auto;
 }
 
@@ -94,10 +94,14 @@ cursor:pointer;
 font-weight:600;
 }
 
+.author-link{
+font-weight:600;
+cursor:pointer;
+}
+
 a{
 color:#2563eb;
 text-decoration:underline;
-cursor:pointer;
 }
 
 </style>
@@ -117,23 +121,24 @@ cursor:pointer;
 
 const GAS_URL="https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
-/* BASE PATH untuk GitHub Pages */
-const BASE_PATH = window.location.pathname.split("/@")[0];
-
 let posts=[];
 
 
 /* SLUG */
 
 function slugify(text){
-return text.toString().toLowerCase()
+
+return text
+.toString()
+.toLowerCase()
 .trim()
-.replace(/[\s]+/g,'-')
-.replace(/[^\w\-]+/g,'');
+.replace(/\s+/g,"-")
+.replace(/[^\w\-]+/g,"");
+
 }
 
 
-/* COUNT COMMENT */
+/* HITUNG KOMENTAR */
 
 function countAllComments(comments){
 
@@ -154,7 +159,7 @@ return count;
 }
 
 
-/* RENDER COMMENTS */
+/* RENDER KOMENTAR */
 
 function renderComments(comments){
 
@@ -164,8 +169,11 @@ comments.forEach(c=>{
 
 html+=`
 <div class="comment-card">
-<div class="comment-author">${c.author}</div>
+
+<div class="comment-author">${c.author || "Anonymous"}</div>
+
 <div class="comment-text">${c.text}</div>
+
 </div>
 `;
 
@@ -203,9 +211,9 @@ posts=data || [];
 
 posts.forEach(p=>{
 
-p.slug=slugify(p.judul);
+p.slug=slugify(p.judul || "post");
 
-if(!p.comments)p.comments=[];
+if(!p.comments) p.comments=[];
 
 });
 
@@ -213,7 +221,9 @@ render();
 
 }
 
-catch(e){
+catch(err){
+
+console.error(err);
 
 document.getElementById("content").innerHTML="Gagal ambil data";
 
@@ -226,16 +236,16 @@ document.getElementById("content").innerHTML="Gagal ambil data";
 
 function getRoute(){
 
-const path=window.location.pathname.replace(BASE_PATH,"");
+const hash=window.location.hash.replace("#","");
 
-const parts=path.split("/").filter(Boolean);
+const parts=hash.split("/").filter(Boolean);
 
 if(parts.length===0){
 return {type:"home"};
 }
 
 if(parts.length===1 && parts[0].startsWith("@")){
-return {
+return{
 type:"author",
 author:parts[0].replace("@","")
 };
@@ -254,32 +264,6 @@ return {type:"home"};
 }
 
 
-/* OPEN POST */
-
-function openPost(author,slug){
-
-const url=`${BASE_PATH}/@${slugify(author)}/${slug}`;
-
-history.pushState({}, "", url);
-
-render();
-
-}
-
-
-/* OPEN AUTHOR */
-
-function openAuthor(author){
-
-const url=`${BASE_PATH}/@${slugify(author)}`;
-
-history.pushState({}, "", url);
-
-render();
-
-}
-
-
 /* HOME */
 
 function renderHome(){
@@ -288,82 +272,100 @@ let html="<ul>";
 
 posts.forEach(p=>{
 
+const commentCount=countAllComments(p.comments);
+
 html+=`
+
 <li onclick="openPost('${p.author}','${p.slug}')">
+
 <span>${p.judul}</span>
-<span class="comment-count">💬 ${countAllComments(p.comments)}</span>
+
+<span class="comment-count">💬 ${commentCount}</span>
+
 </li>
+
 `;
 
 });
 
 html+="</ul>";
 
-return html;
+document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* AUTHOR */
+/* AUTHOR PAGE */
 
 function renderAuthor(author){
 
-const authorPosts=posts.filter(p=>slugify(p.author)===author);
+const list=posts.filter(p=>slugify(p.author)===slugify(author));
 
-let html=`
-<div class="post-card">
+let html=`<div class="post-card">
+
 <h2>@${author}</h2>
-</div>
-<ul>
-`;
 
-authorPosts.forEach(p=>{
+<p>${list.length} Post</p>
+
+</div>
+
+<ul>`;
+
+list.forEach(p=>{
 
 html+=`
+
 <li onclick="openPost('${p.author}','${p.slug}')">
+
 <span>${p.judul}</span>
+
 <span class="comment-count">💬 ${countAllComments(p.comments)}</span>
+
 </li>
+
 `;
 
 });
 
 html+="</ul>";
 
-return html;
+html+=`<button onclick="goHome()">Home</button>`;
+
+document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* POST */
+/* POST PAGE */
 
 function renderPost(author,slug){
 
-const post=posts.find(p=>
-slugify(p.author)===author && p.slug===slug
-);
+const post=posts.find(p=>slugify(p.author)===slugify(author) && p.slug===slug);
 
 if(!post){
-return "<p>Post tidak ditemukan</p>";
+
+document.getElementById("content").innerHTML="Post tidak ditemukan";
+
+return;
+
 }
 
 let html=`
+
 <div class="post-card">
 
 <h2>${post.judul}</h2>
 
+<p>${post.ket || ""}</p>
+
 <p>
 Author:
-<a onclick="openAuthor('${post.author}')">@${post.author}</a>
+<span class="author-link" onclick="openAuthor('${post.author}')">
+${post.author}
+</span>
 </p>
 
-${post.ket?`<p>${post.ket}</p>`:""}
-
-${post.link?`
-<p>
-<a href="${post.link}" target="_blank">Buka Link</a>
-</p>
-`:""}
+${post.link ? `<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`:""}
 
 <h3>Komentar (${countAllComments(post.comments)})</h3>
 
@@ -372,50 +374,51 @@ ${renderComments(post.comments)}
 <button onclick="goHome()">Home</button>
 
 </div>
+
 `;
 
-return html;
+document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* GO HOME */
+/* NAVIGATION */
+
+function openPost(author,slug){
+
+window.location.hash=`@${slugify(author)}/${slug}`;
+
+}
+
+function openAuthor(author){
+
+window.location.hash=`@${slugify(author)}`;
+
+}
 
 function goHome(){
 
-history.pushState({}, "", BASE_PATH);
-
-render();
+window.location.hash="";
 
 }
 
 
-/* MAIN RENDER */
+/* RENDER */
 
 function render(){
 
 const route=getRoute();
 
-const el=document.getElementById("content");
+if(route.type==="home") renderHome();
 
-if(route.type==="home"){
-el.innerHTML=renderHome();
-}
+if(route.type==="author") renderAuthor(route.author);
 
-if(route.type==="author"){
-el.innerHTML=renderAuthor(route.author);
-}
-
-if(route.type==="post"){
-el.innerHTML=renderPost(route.author,route.slug);
-}
+if(route.type==="post") renderPost(route.author,route.slug);
 
 }
 
 
-/* BACK BUTTON */
-
-window.addEventListener("popstate",render);
+window.addEventListener("hashchange",render);
 
 
 /* START */
