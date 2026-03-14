@@ -1,556 +1,780 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Produk Live MadGazan</title>
+<title>Share Link Affiliate - GAS</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 15px; max-width: 900px; margin-inline:auto; background-color:#fffef9; }
-  h1,h2,h3 { color:#b36b00; text-align:center; }
-  h1 { font-size:1.6rem; margin-bottom:5px; }
-  h2 { font-size:1.2rem; margin-bottom:10px; }
-  textarea, select { width:100%; box-sizing:border-box; font-size:1rem; padding:8px; border-radius:6px; border:1px solid #ccc; resize:vertical; }
-  textarea { height:150px; }
-  #output { display:none; margin-top:10px; background:#fff; border-radius:8px; border:1px solid #ffd42a; padding:10px 15px; box-shadow:0 0 8px rgba(255,212,42,0.2);}
-  .link-item {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#fffbec;
-    padding:8px 10px;
-    border-bottom:1px dashed #ffd42a;
-    border-radius:5px;
-    margin-bottom:6px;
-  }
-  .link-item a.link {
-    color:#0066cc;
-    text-decoration:none;
-    word-break:break-all;
-    flex:1;
-  }
-  .link-item a.link:hover { text-decoration:underline; }
-  .link-item a.report {
-    color:#cc0000;
-    text-decoration:none;
-    font-weight:bold;
-    margin-left:10px;
-    white-space:nowrap;
-  }
-  .link-item a.report:hover { text-decoration:underline; }
+body{font-family:system-ui;background:#f2f4f8;margin:0;padding:12px}
+.container{max-width:700px;margin:auto}
 
-  .pagination { margin-top:15px; text-align:center; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
-  .page-btn { padding:10px 14px; cursor:pointer; border:1px solid #ccc; border-radius:6px; background-color:white; font-size:1rem; min-width:40px; }
-  .page-btn:hover { background-color:#ffd42a; color:#b36b00; }
-  .active { font-weight:bold; background-color:#ffd42a; color:#b36b00; border-color:#b36b00; }
-  #copyBtn { margin-top:12px; padding:12px; font-size:1rem; cursor:pointer; border:none; background-color:#ffd42a; color:#b36b00; border-radius:6px; width:100%; }
-  #copyBtn:hover { background-color:#e6c72b; }
-  .input-buttons { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
-  .input-buttons button { flex:1; padding:10px; font-size:0.95rem; cursor:pointer; border:1px solid #ccc; border-radius:6px; background:#f5f5f5; }
-  .input-buttons button:hover { background:#eee; }
-  #stats { margin:15px 0; font-weight:bold; font-size:1rem; white-space:pre-line; }
-  .sponsor { background-color:#fffae6; border:1px solid #ffd42a; padding:12px; margin:15px 0; font-weight:bold; text-align:center; color:#b36b00; border-radius:6px; box-shadow:0 0 5px rgba(255,212,42,0.5); font-size:1rem; }
-  footer { text-align:center; margin-top:25px; font-size:0.9rem; color:#888; }
-  .backup-area { margin-top:25px; padding:12px; background:#fffbe6; border-radius:8px; border:1px solid #ffd42a; text-align:center; }
-  @media (max-width:720px){
-    body { padding:12px; }
-    textarea{ height:120px; }
-  }
-  @media (max-width:480px){
-    h1,h2,h3{ font-size:1rem; }
-    textarea{ height:120px; font-size:0.9rem; }
-    #output{ font-size:0.85rem; }
-    .page-btn{ padding:8px 12px; font-size:0.9rem; }
-    #copyBtn{ font-size:0.95rem; }
-    .input-buttons{ flex-direction:column; }
-    .input-buttons button{ flex:unset; width:100%; }
-  }
+h1{text-align:center;margin-bottom:12px;color:#1f2937}
 
-  /* ✅ Toast Notification Style */
-  #toast {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #333;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.4s, transform 0.4s;
-    z-index: 9999;
-    max-width: 320px;
-    white-space: pre-line;
-    line-height:1.3;
-    font-size:0.95rem;
-  }
+.tabs{display:flex;justify-content:space-around;margin-bottom:15px}
+.tab-btn{flex:1;text-align:center;padding:10px 0;cursor:pointer;border-radius:8px;background:#e5e7eb;font-weight:600;margin:0 3px}
+.tab-btn.active{background:#2563eb;color:#fff}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.form-card,.feed-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 3px 10px rgba(0,0,0,.08);margin-bottom:15px}
+
+label{font-size:14px;font-weight:600;margin-top:10px;display:block}
+
+input,textarea{
+width:100%;padding:12px;margin-top:6px;margin-bottom:12px;
+border-radius:8px;border:1px solid #d1d5db;font-size:14px;box-sizing:border-box
+}
+
+textarea{resize:none;height:80px}
+
+button{
+background:#2563eb;color:#fff;border:none;padding:12px;width:100%;
+font-size:15px;font-weight:600;border-radius:8px;cursor:pointer;margin-top:6px
+}
+
+button:hover{background:#1e40af}
+
+.feed-title{font-size:16px;font-weight:700;margin-bottom:6px;color:#111827}
+.feed-desc{font-size:14px;color:#4b5563;margin-bottom:8px}
+
+.feed-author::before{content:"👤 "}
+.feed-author{
+font-weight:600;color:#2563eb;padding:2px 8px;border-radius:8px;
+cursor:pointer;transition:.2s
+}
+
+.feed-author:hover{
+background:#2563eb;color:#fff;
+box-shadow:0 2px 8px rgba(0,0,0,.2)
+}
+
+.open-btn,.comment-btn{
+padding:10px 14px;border:none;border-radius:8px;
+cursor:pointer;font-weight:600;width:48%;margin-right:2%
+}
+
+.open-btn{background:#10b981;color:#fff}
+.open-btn:hover{background:#059669}
+
+.comment-btn{background:#2563eb;color:#fff}
+.comment-btn:hover{background:#1e40af}
+
+.pagination{text-align:center;margin-top:18px}
+.page-btn{
+display:inline-block;padding:6px 12px;margin:3px;
+background:#e5e7eb;border-radius:6px;cursor:pointer;font-size:14px
+}
+.page-btn.active{background:#2563eb;color:#fff}
+
+/* hover feed profil */
+#profil .feed-card:hover{
+transform:translateY(-2px);
+box-shadow:0 4px 12px rgba(0,0,0,.12);
+transition:.2s
+}
+
+/* =========================
+   KOMENTAR SUPER RAPI
+========================= */
+
+.comment-card{
+display:flex;gap:10px;background:#f9fafb;border-radius:10px;
+padding:12px;margin-bottom:8px;border:1px solid #e5e7eb;
+align-items:flex-start;transition:.2s
+}
+
+.comment-card:hover{
+background:#f3f4f6;
+box-shadow:0 2px 6px rgba(0,0,0,.1)
+}
+
+.comment-avatar{
+width:36px;height:36px;border-radius:50%;
+background:#2563eb;color:#fff;font-weight:bold;
+display:flex;align-items:center;justify-content:center;
+font-size:14px;flex-shrink:0
+}
+
+.comment-body{flex:1}
+
+.comment-author{
+font-weight:600;color:#1f2937;font-size:14px
+}
+
+.comment-text{
+margin-top:2px;font-size:14px;color:#374151;line-height:1.4
+}
+
+.comment-actions{
+margin-top:6px;display:flex;gap:12px
+}
+
+.comment-actions button{
+background:none;border:none;font-size:13px;
+font-weight:600;color:#2563eb;cursor:pointer;padding:0
+}
+
+.comment-actions button:hover{text-decoration:underline}
+
+/* garis thread reply */
+.comment-reply{
+border-left:2px solid #e5e7eb;
+margin-left:20px;padding-left:12px
+}
+
+.comment-time{
+  font-size:11px;
+  color:#9ca3af;
+  margin-left:4px;
+}
+
+/* Waktu posting & komentar kecil & netral */
+.feed-time, .comment-time {
+  font-size:12px;
+  color:#6b7280; /* abu gelap netral */
+  margin-left:6px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:480px){
+
+.tabs{flex-direction:column}
+
+.tab-btn{margin:4px 0}
+
+.open-btn,.comment-btn{
+width:100%;margin-right:0;margin-bottom:6px
+}
+
+.comment-card{
+padding:10px
+}
+
+.comment-avatar{
+width:32px;height:32px;font-size:13px
+}
+
+}
 </style>
 </head>
 <body>
-
-<h1>Produk Live MadGazan</h1>
-<h2>Manajemen Shopee Live V7</h2>
-
-<textarea id="inputLinks" placeholder="Masukkan ribuan link produk Shopee, satu per baris..."></textarea>
-
-<div class="input-buttons">
-  <button id="clearInputLinksBtn">Clear Input Links</button>
-  <button id="copyInputLinksBtn">Copy Input Links</button>
-  <button id="hapusDuplikatBtn">Hapus Duplikat</button>
-  <button id="sortirPerTokoBtn">Sortir Berdasarkan Toko</button>
+<div class="container">
+<h1>Share Link Affiliate</h1>
+<div class="tabs">
+  <div class="tab-btn active" onclick="openTab('home')">Home</div>
+  <div class="tab-btn" onclick="openTab('posting')">Posting</div>
+  <div class="tab-btn" onclick="openTab('mydata')">Data Saya</div>
+  <div class="tab-btn" onclick="openTab('tentang')">Tentang</div>
 </div>
 
-<h3>Daftar File TXT Produk</h3>
-<select id="fileDropdown">
-  <option value="">-- Pilih File TXT --</option>
-  <option value="jalb.txt">jalb.txt</option>
-  <option value="rano.txt">rano.txt</option>
-  <option value="indah.txt">kakfitro.txt</option>
-  <option value="rini.txt">rini.txt</option>
-  <option value="nurbad.txt">nurbad.txt</option>
-</select>
-<div id="updateNotice" style="margin:10px 0; font-weight:bold;"></div>
-<div class="input-buttons">
-  <button id="ambilFileListLinksBtn">Download Terbaru Masal</button>
-</div>
-
-<div class="sponsor">
-  Disponsori oleh <strong>MadGazan Studio</strong><br>
-</div>
-
-<div id="stats"></div>
-
-<h3>Output (Produk Siap Live)</h3>
-<div id="output"></div>
-<button id="copyBtn" onclick="copyToClipboard()">Copy Link di Halaman Ini</button>
-
-<div class="pagination" id="pagination"></div>
-
-<div class="backup-area">
-  <h3>🔒 Backup & Import Data</h3>
-  <div class="input-buttons">
-    <button onclick="exportLocalStorage()">Backup Data ke File</button>
-    <input type="file" id="importFile" accept=".json">
-    <button onclick="importLocalStorage()">Import Data</button>
+<div id="home" class="tab-content active">
+  <div class="form-card">
+    <h2>Selamat Datang di Dunia Share Link!</h2>
+<p>
+  🌟 Selamat datang di platform <strong>share link super praktis & gratis</strong>!  
+  Di sini, Anda bisa membagikan link produk affiliate, video YouTube, TikTok, Shopee, dan konten favorit lainnya dengan mudah.  
+  
+</p>
   </div>
-  <button style="margin-top:10px; background:#ffd0d0; border-color:#cc0000;" onclick="resetLocalStorage()">❌ Hapus Semua Data LocalStorage</button>
-  <button id="syncAllBtn" style="margin-top:15px; background:#d0ffd0; border-color:#00aa00;">🔄 Singkron Semua File TXT</button>
+  <div id="home-feed"></div>
+  <div class="pagination" id="home-pagination"></div>
 </div>
 
-<footer>
-  © 2025 MadGazan Studio — Semua Hak Dilindungi
-</footer>
+<div id="posting" class="tab-content">
+  <div class="form-card">
+    <label>Judul *</label>
+    <input id="judul" placeholder="Masukkan judul">
+    <label>Keterangan (max 160 karakter)</label>
+    <textarea id="ket" maxlength="160" placeholder="Masukkan deskripsi singkat"></textarea>
+    <label>Link *</label>
+    <input id="link" placeholder="Masukkan link Shopee/TikTok/YouTube">
+    <div id="author-display" style="margin-bottom:8px; font-weight:600; color:#374151;"></div>
+    <button onclick="tambahPost()">Posting</button>
+  </div>
+</div>
 
-<!-- ✅ Elemen Toast -->
-<div id="toast"></div>
+<div id="mydata" class="tab-content">
+  <div id="my-feed"></div>
+</div>
+
+<div id="tentang" class="tab-content">
+  <div class="form-card">
+ <h2>Tentang Web Ini</h2>
+<p>
+  🌐 Web ini dibuat sepenuhnya menggunakan <strong>HTML, CSS, dan JavaScript</strong>, tanpa aplikasi tambahan, sehingga cepat, ringan, dan responsif di semua perangkat, termasuk smartphone.  
+
+  💾 Semua postingan, komentar, dan aktivitas pengguna tersimpan di <strong>Google Apps Script (GAS)</strong>, bukan di localStorage, sehingga aman, terpusat, dan dapat diakses dari mana saja.  
+  Anda tidak perlu khawatir kehilangan data atau postingan, semuanya disimpan rapi dan dapat dikelola dengan mudah.  
+
+  🚀 Tujuan web ini adalah memberikan pengalaman berbagi link terbaik: mulai dari produk affiliate, video YouTube, TikTok, hingga link Shopee.  
+  Fitur-fitur unggulan:  
+  - Membuat dan membagikan postingan dengan cepat.  
+  - Melihat, mengedit, dan menghapus postingan dengan mudah.  
+  - Menambahkan komentar serta melihat interaksi pengguna lain.  
+  - Tampilan responsif yang nyaman untuk HP maupun desktop.  
+
+  🔒 Dengan sistem terpusat dan aman, web ini memastikan semua konten Anda terlindungi, mudah dicari, dan selalu tersedia.  
+  Ini bukan sekadar tempat share link, tetapi juga platform untuk membangun interaksi, berbagi informasi, dan mengelola konten Anda dengan profesional.  
+
+  🌟 Nikmati kemudahan berbagi, keamanan data, dan kontrol penuh atas semua postingan Anda di satu tempat.  
+  Web ini dirancang untuk siapa saja yang ingin berbagi konten dengan praktis, aman, dan menyenangkan!
+</p>
+  </div>
+</div>
+
+<div id="profil" class="tab-content">
+  <div id="profil-feed"></div>
+</div>
+
+<div id="comments" class="tab-content">
+  <div id="comment-feed"></div>
+</div>
+
+</div>
 
 <script>
-const AUDIT_LOG_KEY = 'bgAuditLog';
-let baselineHash = '';
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
-const MAX_PER_PAGE = 99;
-const PAGE_OFFSET = 0;
-let allPages = [];
+// TAB
+function openTab(tabName){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  const tabBtn = document.querySelector(`.tab-btn[onclick="openTab('${tabName}')"]`);
+  if(tabBtn) tabBtn.classList.add('active');
+  document.getElementById(tabName).classList.add('active');
+}
+
+// USERNAME
+function generateUsername(){
+  const firstNames = ["Riko","Budi","Sari","Tari","Andi","Dina","Rina","Joko","Lili","Dedi"];
+  const lastNames = ["Jaya","Putra","Sari","Lestari","Wijaya","Santoso","Pratama","Hidayat","Saputra","Rahma"];
+  const num = Math.floor(1000 + Math.random()*9000);
+  return firstNames[Math.floor(Math.random()*firstNames.length)] + lastNames[Math.floor(Math.random()*lastNames.length)] + num;
+}
+let username = localStorage.getItem("visitorUsername");
+if(!username){
+  username = generateUsername();
+  localStorage.setItem("visitorUsername", username);
+}
+document.getElementById("author-display").innerText = "Author: " + username;
+
+// DATA
+let posts = [];
 let currentPage = 1;
+let perPage = 10;
 
-const inputLinksEl = document.getElementById('inputLinks');
-const statsEl = document.getElementById('stats');
-const outputEl = document.getElementById('output');
-const paginationEl = document.getElementById('pagination');
-const dropdownEl = document.getElementById('fileDropdown');
-
-function simpleHash(text) {
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    hash = ((hash << 5) - hash) + text.charCodeAt(i);
-    hash |= 0;
-  }
-  return hash.toString();
+// FETCH DATA DARI GAS
+async function fetchPosts(){
+  try{
+    const resp = await fetch(GAS_URL, {method:"POST", body: JSON.stringify({read:true})});
+    const data = await resp.json();
+    posts = data || [];
+    posts.forEach(p=>{ if(!p.comments)p.comments=[]; });
+    renderHomeFeed();
+    renderMyFeed();
+  } catch(err){ console.error(err); alert("Gagal ambil data dari server."); }
 }
 
-function appendAuditLog(entry) {
-  const old = localStorage.getItem(AUDIT_LOG_KEY) || '';
-  localStorage.setItem(AUDIT_LOG_KEY, old + entry + '\n');
-}
+// TAMBAH POST
+async function tambahPost(){
+  const judul = document.getElementById("judul").value.trim();
+  const ket = document.getElementById("ket").value.trim();
+  const link = document.getElementById("link").value.trim();
+  if(!judul||!link){ showNotif("Judul dan link wajib diisi","#ef4444"); return; }
 
-
-/* ✅ FUNGSI TOAST */
-function showToast(message, color = '#333') {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.style.background = color;
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateY(0)';
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-  }, 4000);
-}
-
-/* ===== Penyimpanan Data ===== */
-function getStorageKey() {
-  const f = dropdownEl.value || 'default';
-  return 'appData_' + f;
-}
-function saveAppData() {
-  const key = getStorageKey();
-  const data = { inputList: inputLinksEl.value, currentPage: currentPage };
-  localStorage.setItem(key, JSON.stringify(data));
-}
-function loadAppData() {
-  const key = getStorageKey();
-  const data = JSON.parse(localStorage.getItem(key) || '{}');
-  if (data.inputList) inputLinksEl.value = data.inputList;
-  currentPage = data.currentPage || 1;
-}
-
-/* ===== Saat Halaman Dimuat ===== */
-window.addEventListener('load', () => {
-  const savedDropdown = localStorage.getItem('selectedFile');
-  if (savedDropdown) dropdownEl.value = savedDropdown;
-  loadAppData();
-  processLinks();
-  showPage(currentPage);
-  setTimeout(checkForUpdates, 2000);
-});
-
-dropdownEl.addEventListener('change', () => {
-  localStorage.setItem('selectedFile', dropdownEl.value);
-  loadAppData();
-  processLinks();
-  showPage(currentPage);
-  checkForUpdates();
-});
-
-/* ===== Tombol Input ===== */
-inputLinksEl.addEventListener('input', () => {
-  processLinks();
-  saveAppData();
-});
-
-document.getElementById('clearInputLinksBtn').addEventListener('click', () => {
-  inputLinksEl.value = '';
-  saveAppData();
-  processLinks();
-  showToast('Input berhasil dikosongkan.', '#b36b00');
-});
-document.getElementById('copyInputLinksBtn').addEventListener('click', () => {
-  const text = inputLinksEl.value.trim();
-  if (!text) return showToast('Input kosong!', '#cc0000');
-  navigator.clipboard.writeText(text).then(() => showToast('✅ Input disalin ke clipboard!', '#008000'));
-});
-document.getElementById('hapusDuplikatBtn').addEventListener('click', () => {
-  const lines = inputLinksEl.value.split('\n').map(l => l.trim()).filter(Boolean);
-  const unique = [...new Set(lines)];
-  inputLinksEl.value = unique.join('\n');
-  processLinks();
-  saveAppData();
-  showToast('✅ Duplikat dihapus!', '#008000');
-});
-
-/* === Sortir Berdasarkan ID Toko === */
-document.getElementById('sortirPerTokoBtn').addEventListener('click', () => {
-  const lines = inputLinksEl.value.split('\n').map(l => l.trim()).filter(Boolean);
-  const tokoMap = new Map();
-  for (let link of lines) {
-    const match = link.match(/product\/(\d+)\/(\d+)/);
-    if (match) {
-      const shopId = match[1];
-      if (!tokoMap.has(shopId)) tokoMap.set(shopId, link);
-    }
-  }
-  const hasil = Array.from(tokoMap.values());
-  inputLinksEl.value = hasil.join('\n');
-  processLinks();
-  saveAppData();
-  showToast(`✅ Sortir selesai!\nTotal toko unik: ${hasil.length}`, '#008000');
-});
-
-/* ===== Proses Link ===== */
-function processLinks() {
-  const raw = inputLinksEl.value.split('\n').map(l => l.trim()).filter(Boolean);
-  const unique = [...new Set(raw)];
-  const dup = raw.length - unique.length;
-  allPages = [];
-  for (let i = 0; i < unique.length; i += MAX_PER_PAGE) {
-    allPages.push(unique.slice(i, i + MAX_PER_PAGE));
-  }
-  if (currentPage > allPages.length) currentPage = 1;
-  renderStats(raw.length, unique.length, dup);
-  renderPagination();
-}
-function renderStats(total, uniq, dup) {
-  statsEl.textContent =
-    `Total link diinput: ${total}\nLink unik: ${uniq}\nDuplikat dihapus: ${dup}\nTotal halaman: ${allPages.length}`;
-}
-
-/* ===== Tampilkan Halaman ===== */
-function showPage(page) {
-  if (!allPages.length) { outputEl.style.display = 'none'; return; }
-  currentPage = page;
-  const fileNow = dropdownEl.value || 'default.txt';
-  outputEl.innerHTML = allPages[page - 1].map(l => {
-    const reportUrl = `https://niddumulu.github.io/shope-tools/lapor/index.html?link=${encodeURIComponent(l)}&file=${encodeURIComponent(fileNow)}`;
-    return `<div class="link-item">
-  <a class="link" href="${l}" target="_blank">${l}</a>
-
-  <a class="report"
-     href="${reportUrl}"
-     target="_blank"
-     title="Laporkan produk bermasalah">
-     🚩
-  </a>
-
-  <a href="javascript:void(0)"
-     class="report"
-     title="Turunkan ke urutan paling akhir"
-     onclick="turunkanLink('${l.replace(/'/g, "\\'")}')">
-     ⬇️
-  </a>
-</div>`;
-
-
-
-  }).join('');
-  outputEl.style.display = 'block';
-  highlightActivePage();
-  saveAppData();
-}
-function renderPagination() {
-  paginationEl.innerHTML = '';
-  for (let i = 1; i <= allPages.length; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i + PAGE_OFFSET;
-    btn.className = 'page-btn';
-    if (i === currentPage) btn.classList.add('active');
-    btn.onclick = () => showPage(i);
-    paginationEl.appendChild(btn);
-  }
-}
-function highlightActivePage() {
-  document.querySelectorAll('.page-btn').forEach((btn, index) => {
-    btn.classList.toggle('active', index + 1 === currentPage);
-  });
-}
-function copyToClipboard() {
-  if (!allPages.length) return showToast('Tidak ada link!', '#cc0000');
-  const text = allPages[currentPage - 1].join('\n');
-  navigator.clipboard.writeText(text).then(() => showToast('✅ Link halaman ini disalin!', '#008000'));
-}
-function turunkanLink(link) {
-  let lines = inputLinksEl.value
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean);
-
-  const idx = lines.indexOf(link);
-  const rowHash = simpleHash(link);
-
-  if (idx === -1) return;
-
-  // hapus dari posisi lama
-  lines.splice(idx, 1);
-
-  // taruh di PALING AKHIR URUTAN
-  lines.push(link);
-  const currentHash = simpleHash(lines.join('\n'));
-
-if (baselineHash && currentHash !== baselineHash) {
-  appendAuditLog(
-    `MOVE|file=${dropdownEl.value}|row=${rowHash}|from=${idx}|to=LAST|ts=${Date.now()}`
-  );
-}
-
-
-  inputLinksEl.value = lines.join('\n');
-
-  processLinks();
-  showPage(currentPage);
-  saveAppData();
-
-  showToast('⬇️ Link dipindahkan ke urutan paling akhir', '#b36b00');
-}
-
-
-/* ===== Backup & Import ===== */
-function exportLocalStorage() {
-  const data = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    data[key] = localStorage.getItem(key);
-  }
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'madgazan_backup.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ Data berhasil disimpan ke madgazan_backup.json', '#008000');
-}
-function importLocalStorage() {
-  const fileInput = document.getElementById('importFile');
-  const file = fileInput.files[0];
-  if (!file) return showToast('Pilih file JSON dulu.', '#cc0000');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      Object.keys(data).forEach(key => {
-        localStorage.setItem(key, data[key]);
-      });
-      showToast('✅ Data berhasil diimport. Reload halaman untuk melihat hasil.', '#008000');
-      setTimeout(() => location.reload(), 1500);
-    } catch (err) {
-      showToast('❌ File tidak valid: ' + err.message, '#cc0000');
-    }
+  const entry = {
+    judul,
+    ket,
+    link,
+    author: username,
+    comments: [],
+    createdAt: new Date().toISOString() // simpan waktu UTC
   };
-  reader.readAsText(file);
+
+  try{
+    const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify(entry)});
+    const res = await resp.json();
+    if(res.status==="ok"){
+      document.getElementById("judul").value="";
+      document.getElementById("ket").value="";
+      document.getElementById("link").value="";
+      fetchPosts();
+      showNotif("Posting berhasil disimpan!","#10b981");
+    } else { alert(res.message); }
+  } catch(err){ console.error(err); alert("Gagal menyimpan postingan."); }
 }
-function resetLocalStorage() {
-  if (confirm('Yakin ingin menghapus semua data localStorage?')) {
-    localStorage.clear();
-    showToast('Semua data localStorage telah dihapus.', '#b36b00');
-    setTimeout(() => location.reload(), 1000);
-  }
+
+// NOTIF
+function showNotif(text,color){
+  let notif=document.createElement("div");
+  notif.innerText=text;
+  notif.style.background=color;
+  notif.style.color="white";
+  notif.style.padding="10px";
+  notif.style.borderRadius="8px";
+  notif.style.marginTop="10px";
+  notif.style.textAlign="center";
+  notif.style.fontWeight="600";
+  const formCard=document.querySelector("#posting .form-card");
+  formCard.appendChild(notif);
+  setTimeout(()=>{notif.remove();},2500);
 }
 
-/* ===== Sinkron Semua File ===== */
-async function syncAllFiles() {
-  const options = Array.from(dropdownEl.options).filter(o => o.value);
-  if (!options.length) return showToast('Tidak ada file di dropdown.', '#cc0000');
-  //if (!confirm(`Sinkron semua file (${options.length} file)?`)) return;
+// KOMENTAR
+let commentIdCounter = 1; // Inisialisasi global untuk unique ID
 
-  let success = 0, fail = 0, lastText = '', lastFile = '';
+async function kirimKomentar(postIndex, parentId = null){
+  const txt = document.getElementById('new-comment').value.trim();
+  if(!txt){ alert("Komentar tidak boleh kosong!"); return; }
 
-  for (const opt of options) {
-    try {
-      const res = await fetch(opt.value + '?t=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      const key = 'appData_' + opt.value;
-      const data = { inputList: text.trim(), currentPage: 1 };
-      localStorage.setItem(key, JSON.stringify(data));
-      success++;
-      lastText = text.trim();
-      lastFile = opt.value;
-    } catch (e) {
-      console.warn(`❌ Gagal ambil ${opt.value}:`, e);
-      fail++;
+  const post = posts[postIndex];
+
+  const newComment = {
+    id: commentIdCounter++,
+    author: username,
+    text: txt,
+    createdAt: new Date().toISOString(), // waktu komentar
+    replies: []
+  };
+
+  if(parentId === null){
+    post.comments.push(newComment);
+  } else {
+
+    function addReply(comments){
+      for(let c of comments){
+        if(c.id === parentId){
+          c.replies.push(newComment);
+          return true;
+        }
+        if(c.replies.length > 0){
+          if(addReply(c.replies)) return true;
+        }
+      }
+      return false;
     }
+
+    addReply(post.comments);
   }
 
-  if (lastText) {
-    inputLinksEl.value = lastText;
-    dropdownEl.value = lastFile;
-    localStorage.setItem('selectedFile', lastFile);
-    processLinks();
-    showPage(1);
-  }
+  try{
+    const resp = await fetch(GAS_URL, {
+      method:"POST",
+      body:JSON.stringify({editIndex: postIndex, comments: post.comments})
+    });
 
-  showToast(`✅ Sinkronisasi selesai\nBerhasil: ${success}\nGagal: ${fail}\nTerakhir: ${lastFile}`, fail>0?'#b36b00':'#008000');
+    const res = await resp.json();
+
+    if(res.status==="ok"){
+      document.getElementById('new-comment').value="";
+      openComments(postIndex);
+      fetchPosts();
+    } else alert(res.message);
+
+  } catch(err){
+    console.error(err);
+    alert("Gagal menyimpan komentar.");
+  }
 }
 
-/* Hubungkan Tombol Sinkron */
-document.getElementById('syncAllBtn').addEventListener('click', syncAllFiles);
-document.getElementById('ambilFileListLinksBtn').addEventListener('click', syncAllFiles);
+function renderCommentsRecursive(comments, postIndex, level = 0){
+  let html = "";
 
-/* ===== Cek Update File Server ===== */
-async function checkForUpdates() {
-  const selectedFile = dropdownEl.value;
-  const noticeEl = document.getElementById('updateNotice');
-  if (!selectedFile) { noticeEl.textContent = ''; return; }
+  comments.forEach(c => {
 
-  const fileName = selectedFile.split('/').pop();
-  noticeEl.textContent = `⏳ Memeriksa versi server untuk "${fileName}"...`;
-  noticeEl.style.color = '#666';
+    const initial = c.author.charAt(0).toUpperCase();
 
-  try {
-    const res = await fetch(selectedFile + '?check=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const serverText = (await res.text()).trim();
-	baselineHash = simpleHash(serverText);
+    html += `
+      <div class="${level>0?'comment-reply':''}">
+        <div class="comment-card" data-author="${c.author}" data-comment-id="${c.id}">
+          
+          <div class="comment-avatar">${initial}</div>
 
+          <div class="comment-body">
+            
+            <div class="comment-author">
+              ${renderAuthorLink(c.author)}
+              <span class="comment-time">
+                • ${formatWIB(c.createdAt || new Date().toISOString())}
+              </span>
+            </div>
 
-    const localKey = 'appData_' + selectedFile;
-    const localData = JSON.parse(localStorage.getItem(localKey) || '{}');
-    const localText = (localData.inputList || '').trim();
+            <div class="comment-text">
+              ${c.text}
+            </div>
 
-    if (serverText !== localText) {
-      noticeEl.textContent = `⚠️ Data lokal "${fileName}" berbeda dengan versi server.`;
-      noticeEl.style.color = '#b30000';
-    } else {
-      noticeEl.textContent = `✅ Data lokal "${fileName}" sudah versi terbaru.`;
-      noticeEl.style.color = '#008000';
-      setTimeout(() => { noticeEl.textContent = ''; }, 5000);
+            <div class="comment-actions">
+              <button onclick="replyToComment(${postIndex}, ${c.id})">
+                ↩ Balas
+              </button>
+
+              <button onclick="scrollToPost(${postIndex})">
+                Lihat Post
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    if(c.replies && c.replies.length > 0){
+      html += renderCommentsRecursive(c.replies, postIndex, level+1);
     }
-  } catch (err) {
-    noticeEl.textContent = `❌ Tidak dapat menghubungi server untuk "${fileName}".`;
-    noticeEl.style.color = '#b30000';
+
+  });
+
+  return html;
+}
+
+function renderAuthorLink(authorName){
+  return `<span class="feed-author" style="cursor:pointer;" onclick="showAuthorProfile('${authorName}')">${authorName}</span>`;
+}
+
+// RENDER HOME FEED
+function renderHomeFeed(){
+  const feedContainer = document.getElementById('home-feed');
+  const start = (currentPage-1)*perPage;
+  const sliceData = posts.slice(start,start+perPage);
+  let html = "";
+
+  sliceData.forEach((p, idx)=>{
+    const globalIndex = posts.indexOf(p);
+    const slug = encodeURIComponent(p.judul.replace(/\s+/g,'-').toLowerCase()); // buat URL-friendly
+
+    html += `
+      <div class="feed-card" id="post-${globalIndex}">
+        <div>${renderAuthorLink(p.author)} • <span class="feed-time">${formatWIB(p.createdAt)}</span></div>
+        <div class="feed-title" style="cursor:pointer; color:#2563eb;" onclick="openPostPage('${slug}')">${p.judul}</div>
+        ${p.ket ? `<div class="feed-desc" style="cursor:pointer;" onclick="openPostPage('${slug}')">${p.ket}</div>` : ""}
+        <div style="display:flex; gap:4%;">
+          <button class="comment-btn" style="flex:1;" onclick="openComments(${globalIndex})">
+            Komentar (${countAllComments(p.comments)})
+          </button>
+          <button class="open-btn" style="flex:1;" onclick="window.open('${p.link}','_blank')">Buka Link</button>
+        </div>
+      </div>
+    `;
+  });
+
+  // pagination
+  const paginationEl = document.getElementById('home-pagination');
+  const totalPage = Math.ceil(posts.length/perPage);
+  if(posts.length>perPage){
+    let htmlPage="";
+    for(let i=1;i<=totalPage;i++){
+      htmlPage+=`<span class="page-btn ${i==currentPage?"active":""}" onclick="gotoHomePage(${i})">${i}</span>`;
+    }
+    paginationEl.innerHTML=htmlPage;
+  } else paginationEl.innerHTML="";
+}
+
+function gotoHomePage(p){ currentPage=p; renderHomeFeed(); }
+
+// RENDER MY FEED
+function renderMyFeed(){
+  const myFeed = document.getElementById('my-feed');
+  const myPosts = posts.filter(p => p.author === username);
+  
+  // Ambil komentar user
+  let myComments = [];
+  posts.forEach((p, idx) => {
+    p.comments.forEach(c => {
+      if(c.author === username){
+        myComments.push({...c, postTitle: p.judul, postIndex: posts.indexOf(p)});
+      }
+    });
+  });
+
+  let html = "";
+
+  // Tampilkan postingan sendiri
+  myPosts.forEach(p=>{
+    const globalIndex = posts.indexOf(p);
+    const totalComments = countAllComments(p.comments); // gunakan countAllComments
+    html+=`
+      <div class="feed-card" id="post-${globalIndex}">
+        <div>${renderAuthorLink(p.author)} • <span class="feed-time">${formatWIB(p.createdAt)}</span></div>
+        <div class="feed-title">${p.judul}</div>
+        ${p.ket? `<div class="feed-desc">${p.ket}</div>` : ""}
+        <div style="display:flex; gap:4%;">
+          <button class="comment-btn" style="flex:1;" onclick="openComments(${globalIndex})">
+            Komentar (${totalComments})
+          </button>
+          <button class="open-btn" style="flex:1;" onclick="window.open('${p.link}','_blank')">Buka Link</button>
+        </div>
+        <button style="background:#2563eb;margin-top:6px;" onclick="openEditForm(${globalIndex})">Edit</button>
+        <button style="background:#ef4444;margin-top:6px;" onclick="hapusPost(${globalIndex})">Hapus</button>
+      </div>
+    `;
+  });
+
+  // Tampilkan komentar user
+  if(myComments.length > 0){
+    html += `<h3>Komentar Saya:</h3>`;
+    myComments.forEach(c=>{
+      html += `
+        <div class="feed-card">
+          <div class="feed-desc"><strong>Komentar di:</strong> ${c.postTitle}</div>
+          ${renderCommentsRecursive([c], c.postIndex)}
+        </div>
+      `;
+    });
+  }
+
+  myFeed.innerHTML = html;
+}
+
+// SCROLL KE POSTINGAN
+function scrollToPost(postIndex){
+  openTab('home');           // Buka tab Home
+  // Tentukan halaman
+  const perPage = 10;        // sama dengan perPage di feed
+  currentPage = Math.floor(postIndex / perPage) + 1;
+  renderHomeFeed();          // render halaman yang benar
+
+  // Tunggu render selesai sebelum scroll
+  setTimeout(()=>{
+    const el = document.getElementById(`post-${postIndex}`);
+    if(el){
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+      // Highlight sementara
+      el.style.boxShadow = "0 0 0 3px #2563eb inset";
+      setTimeout(()=>{ el.style.boxShadow = ""; }, 2000);
+    }
+  }, 100);
+}
+
+function replyToComment(postIndex, commentId){
+  const txt = prompt("Tulis balasan komentar:");
+  if(txt && txt.trim() !== ""){
+    document.getElementById('new-comment').value = txt.trim();
+    kirimKomentar(postIndex, commentId);
   }
 }
 
-function openLogPopup() {
-  const log = localStorage.getItem(AUDIT_LOG_KEY) || '';
-  document.getElementById('logText').value = log || '(log kosong)';
-  document.getElementById('logPopup').style.display = 'block';
-}
-
-function closeLogPopup() {
-  document.getElementById('logPopup').style.display = 'none';
-}
-
-function copyLog() {
-  const ta = document.getElementById('logText');
-  ta.select();
-  document.execCommand('copy');
-  alert('Log berhasil dicopy');
-}
-
-</script>
-<button id="btnLog" onclick="openLogPopup()" title="Audit Log"
-  style="
-    position:fixed;
-    bottom:8px;
-    right:8px;
-    font-size:11px;
-    padding:4px 6px;
-    opacity:0.4;
-    z-index:9999;
-  ">
-  🧾 Lihat Log
-</button>
-<div id="logPopup" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  z-index:10000;
-">
-  <div style="
-    background:#fff;
-    max-width:600px;
-    margin:8% auto;
-    padding:10px;
-    border-radius:6px;
-  ">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong>Audit Log</strong>
-      <button onclick="closeLogPopup()">✖</button>
+// UPDATED openComments
+function openComments(postIndex){
+  const post = posts[postIndex];
+  openTab('comments');
+  const feed = document.getElementById('comment-feed');
+  feed.innerHTML = `
+    <div class="form-card">
+      <div class="post-original">
+        <div>${renderAuthorLink(post.author)} • <span class="feed-time">${formatWIB(post.createdAt)}</span></div>
+        <div class="feed-title">${post.judul}</div>
+        ${post.ket ? `<div class="feed-desc">${post.ket}</div>` : ""}
+        <div><strong>Link Produk:</strong> <a href="${post.link}" target="_blank">${post.link}</a></div>
+      </div>
+      <h3>Komentar (${post.comments.length})</h3>
+      <div id="comments-list">
+        ${renderCommentsRecursive(post.comments, postIndex)}
+      </div>
+      <label>Tambah Komentar:</label>
+      <textarea id="new-comment" placeholder="Tulis komentar..."></textarea>
+      <button onclick="kirimKomentar(${postIndex})">Kirim</button>
+      <button onclick="scrollToPost(${postIndex})" style="background:#ef4444;margin-top:6px;">Kembali</button>
     </div>
+  `;
+}
 
-    <textarea id="logText" style="
-      width:100%;
-      height:220px;
-      margin-top:8px;
-      font-size:12px;
-    " readonly></textarea>
+// EDIT POST
+function openEditForm(postIndex){
+  const post=posts[postIndex];
+  let modal=document.createElement('div');
+  modal.style.position="fixed"; modal.style.top="0"; modal.style.left="0";
+  modal.style.width="100%"; modal.style.height="100%";
+  modal.style.background="rgba(0,0,0,0.5)"; modal.style.display="flex"; modal.style.justifyContent="center"; modal.style.alignItems="center";
+  modal.style.zIndex="9999";
+  modal.innerHTML=`
+    <div class="form-card" style="width:90%; max-width:500px;">
+      <h2>Edit Postingan</h2>
+      <label>Judul *</label>
+      <input id="edit-judul" value="${post.judul}">
+      <label>Keterangan (max 160 karakter)</label>
+      <textarea id="edit-ket" maxlength="160">${post.ket}</textarea>
+      <label>Link *</label>
+      <input id="edit-link" value="${post.link}">
+      <button id="save-edit" style="margin-top:6px;">Simpan Perubahan</button>
+      <button id="cancel-edit" style="margin-top:6px;background:#ef4444;">Batal</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('save-edit').onclick=async()=>{
+    const newJ=document.getElementById('edit-judul').value.trim();
+    const newK=document.getElementById('edit-ket').value.trim();
+    const newL=document.getElementById('edit-link').value.trim();
+    if(!newJ||!newL){ alert("Judul dan link wajib diisi!"); return; }
+    try{
+      const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify({editIndex:postIndex, judul:newJ, ket:newK, link:newL})});
+      const res = await resp.json();
+      if(res.status==="ok"){ modal.remove(); fetchPosts(); showNotif("Posting berhasil diperbarui!","#10b981"); }
+      else alert(res.message);
+    } catch(err){ console.error(err); alert("Gagal menyimpan perubahan."); }
+  };
+  document.getElementById('cancel-edit').onclick=()=>{modal.remove();};
+}
 
-    <button onclick="copyLog()" style="margin-top:6px">
-      📋 Copy Log
-    </button>
-  </div>
-</div>
+// HAPUS POST
+async function hapusPost(postIndex){
+  if(confirm("Apakah yakin ingin menghapus postingan ini?")){
+    try{
+      const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify({deleteIndex:postIndex})});
+      const res = await resp.json();
+      if(res.status==="ok") fetchPosts();
+      else alert(res.message);
+    } catch(err){ console.error(err); alert("Gagal menghapus postingan."); }
+  }
+}
 
+
+// PROFIL AUTHOR FINAL
+function showAuthorProfile(authorName){
+  openTab('profil');
+  const profilFeed = document.getElementById('profil-feed');
+
+  // Ambil semua postingan dan komentar author
+  const userPosts = posts.filter(p => p.author === authorName);
+  let userComments = [];
+  posts.forEach(p => {
+    p.comments.forEach(c => {
+      if(c.author === authorName){
+        userComments.push({...c, postTitle: p.judul, postIndex: posts.indexOf(p)});
+      }
+    });
+  });
+
+  let html = `
+    <div class="form-card">
+      <h2>Profil Author: ${authorName}</h2>
+      <p>Menampilkan semua postingan dan komentar yang diterbitkan.</p>
+      <button onclick="openTab('home'); renderHomeFeed();" style="background:#2563eb;color:white;padding:8px;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-top:6px;">Kembali ke Home</button>
+    </div>
+  `;
+
+  // Render postingan author
+  if(userPosts.length > 0){
+    html += `<h3>Postingan:</h3>`;
+    userPosts.forEach(p=>{
+      const idx = posts.indexOf(p);
+      const totalComments = countAllComments(p.comments); // hitung semua komentar bersarang
+      html += `
+        <div class="feed-card">
+          <div class="feed-author">${p.author}</div>
+          <div class="feed-title">${p.judul}</div>
+          ${p.ket ? `<div class="feed-desc">${p.ket}</div>` : ""}
+          <button class="comment-btn" onclick="openComments(${idx})">Komentar (${totalComments})</button>
+          <button class="open-btn" onclick="scrollToPost(${idx})">Buka Post</button>
+        </div>
+      `;
+    });
+  }
+
+  // Render komentar author
+  if(userComments.length > 0){
+    html += `<h3>Komentar:</h3>`;
+    userComments.forEach(c=>{
+      html += `
+        <div class="feed-card">
+          <div class="feed-desc"><strong>Komentar di:</strong> ${c.postTitle}</div>
+          ${renderCommentsRecursive([c], c.postIndex)}
+        </div>
+      `;
+    });
+  }
+
+  profilFeed.innerHTML = html;
+}
+
+// SCROLL KE KOMENTAR AUTHOR
+function scrollToAuthorComment(postIndex, authorName){
+  // langsung buka tab comments
+  openComments(postIndex);
+
+  setTimeout(()=>{
+    const commentsList = document.getElementById('comments-list');
+    if(!commentsList) return;
+
+    // cari komentar author pakai data-author
+    const commentEl = Array.from(commentsList.children)
+      .find(c => c.getAttribute('data-author') === authorName);
+
+    if(commentEl){
+      commentEl.scrollIntoView({behavior:"smooth", block:"center"});
+      commentEl.style.background = "#fef3c7";
+      setTimeout(()=>{ commentEl.style.background = ""; }, 2000);
+    }
+  }, 150);
+}
+
+function countAllComments(comments){
+  let count = 0;
+  function traverse(cs){
+    cs.forEach(c=>{
+      count++;
+      if(c.replies && c.replies.length>0) traverse(c.replies);
+    });
+  }
+  traverse(comments);
+  return count;
+}
+
+function openPostPage(slug){
+  // cari postingan berdasarkan slug judul
+  const post = posts.find(p => encodeURIComponent(p.judul.replace(/\s+/g,'-').toLowerCase()) === slug);
+  if(!post){ alert("Postingan tidak ditemukan."); return; }
+
+  // bisa buat tab baru atau render di tab khusus
+  openTab('comments'); // pakai tab comments untuk detail postingan
+  const feed = document.getElementById('comment-feed');
+  feed.innerHTML = `
+    <div class="form-card">
+      <div class="post-original">
+        <div>${renderAuthorLink(post.author)} • <span class="feed-time">${formatWIB(post.createdAt)}</span></div>
+        <div class="feed-title">${post.judul}</div>
+        ${post.ket ? `<div class="feed-desc">${post.ket}</div>` : ""}
+        <div><strong>Link Produk:</strong> <a href="${post.link}" target="_blank">${post.link}</a></div>
+      </div>
+      <h3>Komentar (${countAllComments(post.comments)})</h3>
+      <div id="comments-list">
+        ${renderCommentsRecursive(post.comments, posts.indexOf(post))}
+      </div>
+      <label>Tambah Komentar:</label>
+      <textarea id="new-comment" placeholder="Tulis komentar..."></textarea>
+      <button onclick="kirimKomentar(${posts.indexOf(post)})">Kirim</button>
+      <button onclick="scrollToPost(${posts.indexOf(post)})" style="background:#ef4444;margin-top:6px;">Kembali</button>
+    </div>
+  `;
+
+  // update URL tanpa reload
+  window.history.pushState({}, "", `?${slug}`);
+}
+
+
+function formatWIB(dateStr){
+  const date = new Date(dateStr);
+  // WIB = UTC+7
+  const wibDate = new Date(date.getTime() + 7*60*60*1000);
+
+  const day = String(wibDate.getDate()).padStart(2,'0');
+  const monthNames = ["Januari","Februari","Maret","April","Mei","Juni",
+                      "Juli","Agustus","September","Oktober","November","Desember"];
+  const month = monthNames[wibDate.getMonth()];
+  const year = wibDate.getFullYear();
+
+  const hours = String(wibDate.getHours()).padStart(2,'0');
+  const minutes = String(wibDate.getMinutes()).padStart(2,'0');
+
+  return `${day}-${String(wibDate.getMonth()+1).padStart(2,'0')}-${year} ${hours}:${minutes}`;
+}
+
+// INITIAL
+fetchPosts();
+</script>
 </body>
 </html>
