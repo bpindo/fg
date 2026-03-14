@@ -7,7 +7,7 @@
 <style>
 body{font-family:system-ui;background:#f2f4f8;margin:0;padding:12px}
 .container{max-width:600px;margin:auto}
-h1{text-align:center;color:#1f2937;margin-bottom:20px}
+h1,h2,h3{color:#1f2937}
 ul{list-style:none;padding:0}
 li{
   background:#fff;
@@ -21,15 +21,13 @@ li{
   transition:.2s;
 }
 li:hover{background:#2563eb;color:#fff}
-.comment-count{
-  font-size:13px;
-  color:#6b7280;
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
+.comment-count{font-size:13px;color:#6b7280;display:flex;align-items:center;gap:4px}
 .comment-count:hover{color:#fff}
-.post-card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.post-card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08);margin-bottom:16px}
+.comment-card{background:#f9fafb;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb}
+.comment-reply{border-left:2px solid #e5e7eb;margin-left:16px;padding-left:10px;margin-top:6px}
+.comment-author{font-weight:600;color:#2563eb}
+.comment-text{margin-top:2px;color:#374151}
 button{margin-top:12px;padding:10px 14px;border:none;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;font-weight:600}
 a{color:#2563eb;text-decoration:underline}
 </style>
@@ -44,71 +42,84 @@ a{color:#2563eb;text-decoration:underline}
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 let posts = [];
 
-// Fungsi membuat slug dari judul
+// Buat slug
 function slugify(text){
-  return text.toString().toLowerCase()
-    .trim()
-    .replace(/[\s]+/g,'-')
-    .replace(/[^\w\-]+/g,'');
+  return text.toString().toLowerCase().trim().replace(/[\s]+/g,'-').replace(/[^\w\-]+/g,'');
 }
 
-// Hitung semua komentar termasuk reply
+// Hitung semua komentar + reply
 function countAllComments(comments){
-  let count = 0;
+  let count=0;
   comments.forEach(c=>{
-    count += 1;
-    if(c.replies && c.replies.length>0) count += countAllComments(c.replies);
+    count+=1;
+    if(c.replies && c.replies.length>0) count+=countAllComments(c.replies);
   });
   return count;
 }
 
-// Fetch semua post
+// Render komentar bersarang
+function renderComments(comments){
+  let html="";
+  comments.forEach(c=>{
+    html+=`<div class="comment-card">
+      <div class="comment-author">${c.author}</div>
+      <div class="comment-text">${c.text}</div>
+    </div>`;
+    if(c.replies && c.replies.length>0){
+      html+=`<div class="comment-reply">${renderComments(c.replies)}</div>`;
+    }
+  });
+  return html;
+}
+
+// Fetch semua post dari GAS
 async function fetchPosts(){
   try{
-    const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify({read:true})});
+    const resp = await fetch(GAS_URL,{method:"POST", body:JSON.stringify({read:true})});
     const data = await resp.json();
     posts = data || [];
-    posts.forEach(p => {
+    posts.forEach(p=>{
       p.slug = slugify(p.judul || "post-" + Math.random());
       if(!p.comments) p.comments = [];
     });
     render();
-  } catch(err){
+  }catch(err){
     console.error(err);
     document.getElementById("content").innerHTML="<p>Gagal ambil data.</p>";
   }
 }
 
-// Render halaman sesuai hash
+// Render sesuai hash
 function render(){
   const hash = window.location.hash.replace('#','');
   if(hash){
-    // Tampilkan detail post
+    // Detail post
     const post = posts.find(p=>p.slug===hash);
     if(post){
-      document.getElementById("content").innerHTML = `
-        <div class="post-card">
-          <h2>${post.judul}</h2>
-          ${post.ket?`<p>${post.ket}</p>`:""}
-          ${post.link?`<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`:""}
-          <button onclick="goBack()">Kembali</button>
-        </div>
-      `;
-    } else {
-      document.getElementById("content").innerHTML="<p>Post tidak ditemukan.</p><button onclick='goBack()'>Kembali</button>";
+      let html=`<div class="post-card">
+        <h2>${post.judul}</h2>
+        ${post.ket?`<p>${post.ket}</p>`:""}
+        ${post.link?`<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`:""}
+        <p><strong>Author:</strong> ${post.author || "Anonymous"}</p>
+        <h3>Komentar (${countAllComments(post.comments)})</h3>
+        <div>${renderComments(post.comments)}</div>
+        <button onclick="goBack()">Kembali</button>
+      </div>`;
+      document.getElementById("content").innerHTML = html;
+    }else{
+      document.getElementById("content").innerHTML = "<p>Post tidak ditemukan.</p><button onclick='goBack()'>Kembali</button>";
     }
-  } else {
-    // Tampilkan daftar post dengan jumlah komentar di kanan
+  }else{
+    // Daftar post home
     let html="<ul>";
     posts.forEach(p=>{
-      const commentCount = countAllComments(p.comments);
       html+=`<li onclick="openPost('${p.slug}')">
         <span>${p.judul}</span>
-        <span class="comment-count">💬 ${commentCount}</span>
+        <span class="comment-count">💬 ${countAllComments(p.comments)}</span>
       </li>`;
     });
     html+="</ul>";
-    document.getElementById("content").innerHTML = html;
+    document.getElementById("content").innerHTML=html;
   }
 }
 
@@ -118,13 +129,13 @@ function openPost(slug){
   render();
 }
 
-// Fungsi kembali ke daftar
+// Fungsi kembali
 function goBack(){
   window.location.hash="";
   render();
 }
 
-// Listen hash change (misal reload halaman dengan hash)
+// Listen hash change
 window.addEventListener("hashchange", render);
 
 // Inisialisasi
