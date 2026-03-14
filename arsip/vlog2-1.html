@@ -117,6 +117,9 @@ cursor:pointer;
 
 const GAS_URL="https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
+/* BASE PATH untuk GitHub Pages */
+const BASE_PATH = window.location.pathname.split("/@")[0];
+
 let posts=[];
 
 
@@ -130,7 +133,7 @@ return text.toString().toLowerCase()
 }
 
 
-/* COUNT COMMENTS */
+/* COUNT COMMENT */
 
 function countAllComments(comments){
 
@@ -223,7 +226,7 @@ document.getElementById("content").innerHTML="Gagal ambil data";
 
 function getRoute(){
 
-const path=window.location.pathname;
+const path=window.location.pathname.replace(BASE_PATH,"");
 
 const parts=path.split("/").filter(Boolean);
 
@@ -255,7 +258,7 @@ return {type:"home"};
 
 function openPost(author,slug){
 
-const url=`/@${slugify(author)}/${slug}`;
+const url=`${BASE_PATH}/@${slugify(author)}/${slug}`;
 
 history.pushState({}, "", url);
 
@@ -268,7 +271,7 @@ render();
 
 function openAuthor(author){
 
-const url=`/@${slugify(author)}`;
+const url=`${BASE_PATH}/@${slugify(author)}`;
 
 history.pushState({}, "", url);
 
@@ -277,7 +280,7 @@ render();
 }
 
 
-/* HOME PAGE */
+/* HOME */
 
 function renderHome(){
 
@@ -301,7 +304,7 @@ return html;
 }
 
 
-/* AUTHOR PAGE */
+/* AUTHOR */
 
 function renderAuthor(author){
 
@@ -332,7 +335,7 @@ return html;
 }
 
 
-/* POST PAGE */
+/* POST */
 
 function renderPost(author,slug){
 
@@ -380,7 +383,7 @@ return html;
 
 function goHome(){
 
-history.pushState({}, "", "/");
+history.pushState({}, "", BASE_PATH);
 
 render();
 
