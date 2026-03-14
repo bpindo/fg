@@ -9,8 +9,26 @@ body{font-family:system-ui;background:#f2f4f8;margin:0;padding:12px}
 .container{max-width:600px;margin:auto}
 h1{text-align:center;color:#1f2937;margin-bottom:20px}
 ul{list-style:none;padding:0}
-li{background:#fff;padding:12px;margin-bottom:8px;border-radius:8px;cursor:pointer;transition:.2s}
+li{
+  background:#fff;
+  padding:12px;
+  margin-bottom:8px;
+  border-radius:8px;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:.2s;
+}
 li:hover{background:#2563eb;color:#fff}
+.comment-count{
+  font-size:13px;
+  color:#6b7280;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.comment-count:hover{color:#fff}
 .post-card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 button{margin-top:12px;padding:10px 14px;border:none;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;font-weight:600}
 a{color:#2563eb;text-decoration:underline}
@@ -34,13 +52,26 @@ function slugify(text){
     .replace(/[^\w\-]+/g,'');
 }
 
+// Hitung semua komentar termasuk reply
+function countAllComments(comments){
+  let count = 0;
+  comments.forEach(c=>{
+    count += 1;
+    if(c.replies && c.replies.length>0) count += countAllComments(c.replies);
+  });
+  return count;
+}
+
 // Fetch semua post
 async function fetchPosts(){
   try{
     const resp = await fetch(GAS_URL, {method:"POST", body:JSON.stringify({read:true})});
     const data = await resp.json();
     posts = data || [];
-    posts.forEach(p => p.slug = slugify(p.judul || "post-" + Math.random()));
+    posts.forEach(p => {
+      p.slug = slugify(p.judul || "post-" + Math.random());
+      if(!p.comments) p.comments = [];
+    });
     render();
   } catch(err){
     console.error(err);
@@ -67,10 +98,14 @@ function render(){
       document.getElementById("content").innerHTML="<p>Post tidak ditemukan.</p><button onclick='goBack()'>Kembali</button>";
     }
   } else {
-    // Tampilkan daftar post
+    // Tampilkan daftar post dengan jumlah komentar di kanan
     let html="<ul>";
     posts.forEach(p=>{
-      html+=`<li onclick="openPost('${p.slug}')">${p.judul}</li>`;
+      const commentCount = countAllComments(p.comments);
+      html+=`<li onclick="openPost('${p.slug}')">
+        <span>${p.judul}</span>
+        <span class="comment-count">💬 ${commentCount}</span>
+      </li>`;
     });
     html+="</ul>";
     document.getElementById("content").innerHTML = html;
