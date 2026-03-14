@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,119 +8,135 @@
 
 <style>
 
+/* =========================
+   BASE
+========================= */
+
 body{
-font-family:system-ui;
-background:#f2f4f8;
-margin:0;
-padding:12px;
+    font-family:system-ui;
+    background:#f2f4f8;
+    margin:0;
+    padding:12px;
 }
 
 .container{
-max-width:640px;
-margin:auto;
+    max-width:640px;
+    margin:auto;
 }
 
 h1,h2,h3{
-color:#1f2937;
-}
-
-ul{
-list-style:none;
-padding:0;
-}
-
-li{
-background:#fff;
-padding:12px;
-margin-bottom:8px;
-border-radius:8px;
-cursor:pointer;
-display:flex;
-justify-content:space-between;
-align-items:center;
-transition:.2s;
-}
-
-li:hover{
-background:#2563eb;
-color:#fff;
-}
-
-.comment-count{
-font-size:13px;
-color:#6b7280;
-}
-
-.post-card{
-background:#fff;
-padding:16px;
-border-radius:12px;
-box-shadow:0 3px 10px rgba(0,0,0,.08);
-margin-bottom:16px;
-}
-
-.comment-card{
-background:#f9fafb;
-border-radius:10px;
-padding:10px;
-margin-bottom:8px;
-border:1px solid #e5e7eb;
-}
-
-.comment-reply{
-border-left:2px solid #e5e7eb;
-margin-left:16px;
-padding-left:10px;
-margin-top:6px;
-}
-
-.comment-author{
-font-weight:600;
-color:#2563eb;
-}
-
-.comment-text{
-margin-top:2px;
-color:#374151;
-}
-
-button{
-margin-top:12px;
-padding:10px 14px;
-border:none;
-border-radius:8px;
-background:#ef4444;
-color:#fff;
-cursor:pointer;
-font-weight:600;
-}
-
-.author-link{
-font-weight:600;
-cursor:pointer;
+    color:#1f2937;
 }
 
 a{
-color:#2563eb;
-text-decoration:underline;
+    color:#2563eb;
+    text-decoration:underline;
 }
 
-.author-link{
-color:#2563eb;
-font-weight:600;
-cursor:pointer;
+/* =========================
+   LIST POST
+========================= */
+
+ul{
+    list-style:none;
+    padding:0;
 }
 
-.author-link:hover{
-text-decoration:underline;
+li{
+    background:#fff;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:.2s;
+}
+
+li:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.comment-count{
+    font-size:13px;
+    color:#6b7280;
+}
+
+/* =========================
+   POST CARD
+========================= */
+
+.post-card{
+    background:#fff;
+    padding:16px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    margin-bottom:16px;
 }
 
 .post-card h2{
-margin-bottom:4px;
+    margin-bottom:4px;
+}
+
+/* =========================
+   COMMENT
+========================= */
+
+.comment-card{
+    background:#f9fafb;
+    border-radius:10px;
+    padding:10px;
+    margin-bottom:8px;
+    border:1px solid #e5e7eb;
+}
+
+.comment-reply{
+    border-left:2px solid #e5e7eb;
+    margin-left:16px;
+    padding-left:10px;
+    margin-top:6px;
+}
+
+.comment-author{
+    font-weight:600;
+    color:#2563eb;
+}
+
+.comment-text{
+    margin-top:2px;
+    color:#374151;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+button{
+    margin-top:12px;
+    padding:10px 14px;
+    border:none;
+    border-radius:8px;
+    background:#ef4444;
+    color:#fff;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.author-link{
+    color:#2563eb;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.author-link:hover{
+    text-decoration:underline;
 }
 
 </style>
 </head>
+
 
 <body>
 
@@ -131,417 +148,453 @@ margin-bottom:4px;
 
 </div>
 
+
 <script>
+
+/* =========================
+   CONFIG
+========================= */
 
 const GAS_URL="https://script.google.com/macros/s/AKfycbwzsIy_r8hsXjIH7nt2VgxETeM86kipahJCMPMLLAzgenyjWc-SrkxTRwI-uym1-Qws/exec";
 
 let posts=[];
 
 
-/* SLUG */
+/* =========================
+   UTIL
+========================= */
 
 function slugify(text){
-return text.toString().toLowerCase().trim().replace(/\s+/g,"-").replace(/[^\w\-]+/g,"");
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g,"-")
+        .replace(/[^\w\-]+/g,"");
 }
-
-
-/* HITUNG KOMENTAR */
 
 function countAllComments(comments){
-let count=0;
 
-comments.forEach(c=>{
-count+=1;
+    let count=0;
 
-if(c.replies && c.replies.length>0){
-count+=countAllComments(c.replies);
+    comments.forEach(c=>{
+
+        count++;
+
+        if(c.replies && c.replies.length>0){
+            count+=countAllComments(c.replies);
+        }
+
+    });
+
+    return count;
 }
-});
-
-return count;
-}
 
 
-/* BUAT SLUG KOMENTAR */
+/* =========================
+   COMMENT SLUG
+========================= */
 
 function assignCommentSlug(post){
 
-function loop(comments){
+    function loop(comments){
 
-comments.forEach(c=>{
+        comments.forEach(c=>{
 
-if(!c.slug){
-const time=Date.now();
-c.slug=`re-${slugify(post.author)}-${time}`;
+            if(!c.slug){
+                const time=Date.now();
+                c.slug=`re-${slugify(post.author)}-${time}`;
+            }
+
+            if(c.replies){
+                loop(c.replies);
+            }
+
+        });
+
+    }
+
+    loop(post.comments);
+
 }
 
-if(c.replies){
-loop(c.replies);
-}
 
-});
-
-}
-
-loop(post.comments);
-
-}
-
-
-/* RENDER KOMENTAR */
+/* =========================
+   RENDER COMMENT
+========================= */
 
 function renderComments(comments){
 
-let html="";
+    let html="";
 
-comments.forEach(c=>{
+    comments.forEach(c=>{
 
-html+=`
+        html+=`
 
-<div class="comment-card">
+        <div class="comment-card">
 
-<div class="comment-author">@${c.author}</div>
+            <div class="comment-author">@${c.author}</div>
 
-<div class="comment-text">
+            <div class="comment-text">
+                <a onclick="openComment('${c.author}','${c.slug}')">
+                ${c.text}
+                </a>
+            </div>
 
-<a onclick="openComment('${c.author}','${c.slug}')">
-${c.text}
-</a>
+        </div>
 
-</div>
+        `;
 
-</div>
+        if(c.replies && c.replies.length>0){
 
-`;
+            html+=`
+            <div class="comment-reply">
+            ${renderComments(c.replies)}
+            </div>
+            `;
 
-if(c.replies && c.replies.length>0){
+        }
 
-html+=`
+    });
 
-<div class="comment-reply">
-${renderComments(c.replies)}
-</div>
-
-`;
-
-}
-
-});
-
-return html;
+    return html;
 
 }
 
 
-/* FETCH POSTS */
+/* =========================
+   FETCH POSTS
+========================= */
 
 async function fetchPosts(){
 
-try{
+    try{
 
-const resp=await fetch(GAS_URL,{
-method:"POST",
-body:JSON.stringify({read:true})
-});
+        const resp=await fetch(GAS_URL,{
+            method:"POST",
+            body:JSON.stringify({read:true})
+        });
 
-const data=await resp.json();
+        const data=await resp.json();
 
-posts=data || [];
+        posts=data || [];
 
-posts.forEach(p=>{
+        posts.forEach(p=>{
 
-p.slug=slugify(p.judul || "post");
+            p.slug=slugify(p.judul || "post");
 
-if(!p.comments) p.comments=[];
+            if(!p.comments){
+                p.comments=[];
+            }
 
-assignCommentSlug(p);
+            assignCommentSlug(p);
 
-});
+        });
 
-render();
+        render();
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        document.getElementById("content").innerHTML="Gagal ambil data";
+
+    }
 
 }
 
-catch(err){
 
-console.error(err);
-
-document.getElementById("content").innerHTML="Gagal ambil data";
-
-}
-
-}
-
-
-/* ROUTER */
+/* =========================
+   ROUTER
+========================= */
 
 function getRoute(){
 
-const hash=window.location.hash.replace("#","");
-const parts=hash.split("/").filter(Boolean);
+    const hash=window.location.hash.replace("#","");
+    const parts=hash.split("/").filter(Boolean);
 
-if(parts.length===0){
-return {type:"home"};
+    if(parts.length===0){
+        return {type:"home"};
+    }
+
+    if(parts.length===1 && parts[0].startsWith("@")){
+        return {
+            type:"author",
+            author:parts[0].replace("@","")
+        };
+    }
+
+    if(parts.length===2 && parts[0].startsWith("@")){
+
+        if(parts[1].startsWith("re-")){
+            return {
+                type:"comment",
+                author:parts[0].replace("@",""),
+                slug:parts[1]
+            };
+        }
+
+        return {
+            type:"post",
+            author:parts[0].replace("@",""),
+            slug:parts[1]
+        };
+
+    }
+
+    return {type:"home"};
+
 }
 
-if(parts.length===1 && parts[0].startsWith("@")){
-return{
-type:"author",
-author:parts[0].replace("@","")
-};
-}
 
-if(parts.length===2 && parts[0].startsWith("@")){
-
-if(parts[1].startsWith("re-")){
-return{
-type:"comment",
-author:parts[0].replace("@",""),
-slug:parts[1]
-};
-}
-
-return{
-type:"post",
-author:parts[0].replace("@",""),
-slug:parts[1]
-};
-
-}
-
-return {type:"home"};
-
-}
-
-
-/* HOME */
+/* =========================
+   PAGE HOME
+========================= */
 
 function renderHome(){
 
-let html="<ul>";
+    let html="<ul>";
 
-posts.forEach(p=>{
+    posts.forEach(p=>{
 
-const commentCount=countAllComments(p.comments);
+        const commentCount=countAllComments(p.comments);
 
-html+=`
+        html+=`
 
-<li onclick="openPost('${p.author}','${p.slug}')">
+        <li onclick="openPost('${p.author}','${p.slug}')">
 
-<span>${p.judul}</span>
+            <span>${p.judul}</span>
+            <span class="comment-count">💬 ${commentCount}</span>
 
-<span class="comment-count">💬 ${commentCount}</span>
+        </li>
 
-</li>
+        `;
 
-`;
+    });
 
-});
+    html+="</ul>";
 
-html+="</ul>";
-
-document.getElementById("content").innerHTML=html;
+    document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* AUTHOR PAGE */
+/* =========================
+   PAGE AUTHOR
+========================= */
 
 function renderAuthor(author){
 
-const list=posts.filter(p=>slugify(p.author)===slugify(author));
+    const list=posts.filter(p=>slugify(p.author)===slugify(author));
 
-let html=`<div class="post-card">
+    let html=`
 
-<h2>@${author}</h2>
-<p>${list.length} Post</p>
+    <div class="post-card">
 
-</div>
+        <h2>@${author}</h2>
+        <p>${list.length} Post</p>
 
-<ul>`;
+    </div>
 
-list.forEach(p=>{
+    <ul>
 
-html+=`
+    `;
 
-<li onclick="openPost('${p.author}','${p.slug}')">
+    list.forEach(p=>{
 
-<span>${p.judul}</span>
+        html+=`
 
-<span class="comment-count">💬 ${countAllComments(p.comments)}</span>
+        <li onclick="openPost('${p.author}','${p.slug}')">
 
-</li>
+            <span>${p.judul}</span>
+            <span class="comment-count">💬 ${countAllComments(p.comments)}</span>
 
-`;
+        </li>
 
-});
+        `;
 
-html+="</ul>";
-html+=`<button onclick="goHome()">Home</button>`;
+    });
 
-document.getElementById("content").innerHTML=html;
+    html+="</ul>";
+    html+=`<button onclick="goHome()">Home</button>`;
+
+    document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* POST PAGE */
+/* =========================
+   PAGE POST
+========================= */
 
 function renderPost(author,slug){
 
-const post=posts.find(p=>slugify(p.author)===slugify(author) && p.slug===slug);
+    const post=posts.find(
+        p=>slugify(p.author)===slugify(author) && p.slug===slug
+    );
 
-if(!post){
-document.getElementById("content").innerHTML="Post tidak ditemukan";
-return;
+    if(!post){
+        document.getElementById("content").innerHTML="Post tidak ditemukan";
+        return;
+    }
+
+    let html=`
+
+    <div class="post-card">
+
+        <h2>${post.judul}</h2>
+
+        <p style="color:#6b7280;font-size:14px">
+
+        oleh
+        <span class="author-link" onclick="openAuthor('${post.author}')">
+        @${post.author}
+        </span>
+
+        • ${countAllComments(post.comments)} komentar
+
+        </p>
+
+        <p>${post.ket || ""}</p>
+
+        ${
+            post.link
+            ? `<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`
+            : ""
+        }
+
+        <h3>Komentar (${countAllComments(post.comments)})</h3>
+
+        ${renderComments(post.comments)}
+
+        <button onclick="goHome()">Home</button>
+
+    </div>
+
+    `;
+
+    document.getElementById("content").innerHTML=html;
+
 }
 
-let html=`
 
-<div class="post-card">
-
-<h2>${post.judul}</h2>
-
-<p style="color:#6b7280;font-size:14px">
-
-oleh 
-<span class="author-link" onclick="openAuthor('${post.author}')">
-@${post.author}
-</span>
-
-• ${countAllComments(post.comments)} komentar
-
-</p>
-
-<p>${post.ket || ""}</p>
-
-${post.link ? `<p>Link: <a href="${post.link}" target="_blank">${post.link}</a></p>`:""}
-
-<h3>Komentar (${countAllComments(post.comments)})</h3>
-
-${renderComments(post.comments)}
-
-<button onclick="goHome()">Home</button>
-
-</div>
-
-`;
-
-document.getElementById("content").innerHTML=html;
-
-}
-
-
-/* HALAMAN KOMENTAR */
+/* =========================
+   PAGE COMMENT
+========================= */
 
 function renderComment(author,slug){
 
-let found=null;
-let parent=null;
+    let found=null;
+    let parent=null;
 
-posts.forEach(p=>{
+    posts.forEach(p=>{
 
-function search(comments){
+        function search(comments){
 
-comments.forEach(c=>{
+            comments.forEach(c=>{
 
-if(c.slug===slug){
-found=c;
-parent=p;
-}
+                if(c.slug===slug){
+                    found=c;
+                    parent=p;
+                }
 
-if(c.replies){
-search(c.replies);
-}
+                if(c.replies){
+                    search(c.replies);
+                }
 
-});
+            });
 
-}
+        }
 
-search(p.comments);
+        search(p.comments);
 
-});
+    });
 
-if(!found){
+    if(!found){
+        document.getElementById("content").innerHTML="Komentar tidak ditemukan";
+        return;
+    }
 
-document.getElementById("content").innerHTML="Komentar tidak ditemukan";
-return;
+    let html=`
 
-}
+    <div class="post-card">
 
-let html=`
+        <h2>Komentar oleh @${found.author}</h2>
 
-<div class="post-card">
+        <p>${found.text}</p>
 
-<h2>Komentar oleh @${found.author}</h2>
+        <p style="color:#6b7280">
 
-<p>${found.text}</p>
+        Balasan dari post:
 
-<p style="color:#6b7280">
+        <span class="author-link"
+        onclick="openPost('${parent.author}','${parent.slug}')">
 
-Balasan dari post:
+        ${parent.judul}
 
-<span class="author-link"
-onclick="openPost('${parent.author}','${parent.slug}')">
+        </span>
 
-${parent.judul}
+        </p>
 
-</span>
+        <button onclick="goHome()">Home</button>
 
-</p>
+    </div>
 
-<button onclick="goHome()">Home</button>
+    `;
 
-</div>
-
-`;
-
-document.getElementById("content").innerHTML=html;
+    document.getElementById("content").innerHTML=html;
 
 }
 
 
-/* NAVIGATION */
+/* =========================
+   NAVIGATION
+========================= */
 
 function openPost(author,slug){
-window.location.hash=`@${slugify(author)}/${slug}`;
+    window.location.hash=`@${slugify(author)}/${slug}`;
 }
 
 function openAuthor(author){
-window.location.hash=`@${slugify(author)}`;
+    window.location.hash=`@${slugify(author)}`;
 }
 
 function openComment(author,slug){
-window.location.hash=`@${slugify(author)}/${slug}`;
+    window.location.hash=`@${slugify(author)}/${slug}`;
 }
 
 function goHome(){
-window.location.hash="";
+    window.location.hash="";
 }
 
 
-/* RENDER */
+/* =========================
+   RENDER
+========================= */
 
 function render(){
 
-const route=getRoute();
+    const route=getRoute();
 
-if(route.type==="home") renderHome();
-if(route.type==="author") renderAuthor(route.author);
-if(route.type==="post") renderPost(route.author,route.slug);
-if(route.type==="comment") renderComment(route.author,route.slug);
+    if(route.type==="home") renderHome();
+    if(route.type==="author") renderAuthor(route.author);
+    if(route.type==="post") renderPost(route.author,route.slug);
+    if(route.type==="comment") renderComment(route.author,route.slug);
 
 }
 
 
+/* =========================
+   INIT
+========================= */
+
 window.addEventListener("hashchange",render);
-
-
-/* START */
 
 fetchPosts();
 
 </script>
 
-</script>
 </body>
 </html>
