@@ -275,15 +275,45 @@ function getPostIdFromURL() {
 
 
 // FETCH DATA DARI GAS
+// FETCH DATA DARI GAS
 async function fetchPosts(){
   try{
     const resp = await fetch(GAS_URL, {method:"POST", body: JSON.stringify({read:true})});
     const data = await resp.json();
     posts = data || [];
-    posts.forEach(p=>{ if(!p.comments)p.comments=[]; });
+
+    // Pastikan setiap post punya id dan comments
+    posts.forEach((p, idx) => {
+      if(!p.id){ 
+        // buat id unik jika belum ada
+        p.id = `post-${new Date(p.createdAt).getTime()}-${idx}`;
+      }
+      if(!p.comments) p.comments = [];
+    });
+
+    // Render feed
     renderHomeFeed();
     renderMyFeed();
-  } catch(err){ console.error(err); alert("Gagal ambil data dari server."); }
+
+    // Scroll otomatis jika ada ?post=
+    const postIdFromURL = getPostIdFromURL();
+    if(postIdFromURL){
+      setTimeout(()=>{
+        const el = document.getElementById(postIdFromURL);
+        if(el){
+          openTab('home');  // buka tab home dulu
+          el.scrollIntoView({behavior:"smooth", block:"start"});
+          // Highlight sementara
+          el.style.boxShadow = "0 0 0 3px #2563eb inset";
+          setTimeout(()=>{ el.style.boxShadow=""; },2000);
+        }
+      }, 400); // delay supaya feed sudah ter-render
+    }
+
+  } catch(err){ 
+    console.error(err); 
+    alert("Gagal ambil data dari server."); 
+  }
 }
 
 // TAMBAH POST
