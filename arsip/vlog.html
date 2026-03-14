@@ -280,6 +280,14 @@ async function fetchPosts(){
 }
 
 // TAMBAH POST
+function generatePostId() {
+  // Contoh: "post-20260314192345-4821"
+  const now = new Date();
+  const ts = now.getTime(); // timestamp
+  const rand = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+  return `post-${ts}-${rand}`;
+}
+
 async function tambahPost(){
   const judul = document.getElementById("judul").value.trim();
   const ket = document.getElementById("ket").value.trim();
@@ -287,6 +295,7 @@ async function tambahPost(){
   if(!judul||!link){ showNotif("Judul dan link wajib diisi","#ef4444"); return; }
 
   const entry = {
+    id: generatePostId(),   // <=== Tambahkan ID unik
     judul,
     ket,
     link,
@@ -445,22 +454,23 @@ function renderHomeFeed(){
 
   sliceData.forEach((p, idx)=>{
     const globalIndex = posts.indexOf(p);
-    const slug = encodeURIComponent(p.judul.replace(/\s+/g,'-').toLowerCase()); // buat URL-friendly
-
+    const totalComments = countAllComments(p.comments); // hitung semua komentar bersarang
     html += `
       <div class="feed-card" id="post-${globalIndex}">
         <div>${renderAuthorLink(p.author)} • <span class="feed-time">${formatWIB(p.createdAt)}</span></div>
-        <div class="feed-title" style="cursor:pointer; color:#2563eb;" onclick="openPostPage('${slug}')">${p.judul}</div>
-        ${p.ket ? `<div class="feed-desc" style="cursor:pointer;" onclick="openPostPage('${slug}')">${p.ket}</div>` : ""}
+        <div class="feed-title">${p.judul}</div>
+        ${p.ket ? `<div class="feed-desc">${p.ket}</div>` : ""}
         <div style="display:flex; gap:4%;">
           <button class="comment-btn" style="flex:1;" onclick="openComments(${globalIndex})">
-            Komentar (${countAllComments(p.comments)})
+            Komentar (${totalComments})
           </button>
           <button class="open-btn" style="flex:1;" onclick="window.open('${p.link}','_blank')">Buka Link</button>
         </div>
       </div>
     `;
   });
+
+  feedContainer.innerHTML = html;
 
   // pagination
   const paginationEl = document.getElementById('home-pagination');
@@ -632,7 +642,7 @@ async function hapusPost(postIndex){
   }
 }
 
-
+// PROFIL AUTHOR
 // PROFIL AUTHOR FINAL
 function showAuthorProfile(authorName){
   openTab('profil');
@@ -714,47 +724,14 @@ function scrollToAuthorComment(postIndex, authorName){
 
 function countAllComments(comments){
   let count = 0;
-  function traverse(cs){
-    cs.forEach(c=>{
-      count++;
-      if(c.replies && c.replies.length>0) traverse(c.replies);
-    });
-  }
-  traverse(comments);
+  comments.forEach(c=>{
+    count += 1; // hitung komentar ini
+    if(c.replies && c.replies.length > 0){
+      count += countAllComments(c.replies); // hitung semua reply
+    }
+  });
   return count;
 }
-
-function openPostPage(slug){
-  // cari postingan berdasarkan slug judul
-  const post = posts.find(p => encodeURIComponent(p.judul.replace(/\s+/g,'-').toLowerCase()) === slug);
-  if(!post){ alert("Postingan tidak ditemukan."); return; }
-
-  // bisa buat tab baru atau render di tab khusus
-  openTab('comments'); // pakai tab comments untuk detail postingan
-  const feed = document.getElementById('comment-feed');
-  feed.innerHTML = `
-    <div class="form-card">
-      <div class="post-original">
-        <div>${renderAuthorLink(post.author)} • <span class="feed-time">${formatWIB(post.createdAt)}</span></div>
-        <div class="feed-title">${post.judul}</div>
-        ${post.ket ? `<div class="feed-desc">${post.ket}</div>` : ""}
-        <div><strong>Link Produk:</strong> <a href="${post.link}" target="_blank">${post.link}</a></div>
-      </div>
-      <h3>Komentar (${countAllComments(post.comments)})</h3>
-      <div id="comments-list">
-        ${renderCommentsRecursive(post.comments, posts.indexOf(post))}
-      </div>
-      <label>Tambah Komentar:</label>
-      <textarea id="new-comment" placeholder="Tulis komentar..."></textarea>
-      <button onclick="kirimKomentar(${posts.indexOf(post)})">Kirim</button>
-      <button onclick="scrollToPost(${posts.indexOf(post)})" style="background:#ef4444;margin-top:6px;">Kembali</button>
-    </div>
-  `;
-
-  // update URL tanpa reload
-  window.history.pushState({}, "", `?${slug}`);
-}
-
 
 function formatWIB(dateStr){
   const date = new Date(dateStr);
