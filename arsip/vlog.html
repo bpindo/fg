@@ -459,17 +459,15 @@ function renderHomeFeed(){
   const sliceData = posts.slice(start,start+perPage);
   let html = "";
 
-  sliceData.forEach((p, idx)=>{
-    const globalIndex = posts.indexOf(p);
-    const totalComments = countAllComments(p.comments); // hitung semua komentar bersarang
+  sliceData.forEach((p)=>{
     html += `
-      <div class="feed-card" id="post-${globalIndex}">
+      <div class="feed-card" id="${p.id}">
         <div>${renderAuthorLink(p.author)} • <span class="feed-time">${formatWIB(p.createdAt)}</span></div>
         <div class="feed-title">${p.judul}</div>
         ${p.ket ? `<div class="feed-desc">${p.ket}</div>` : ""}
         <div style="display:flex; gap:4%;">
-          <button class="comment-btn" style="flex:1;" onclick="openComments(${globalIndex})">
-            Komentar (${totalComments})
+          <button class="comment-btn" style="flex:1;" onclick="openComments(posts.indexOf(p))">
+            Komentar (${countAllComments(p.comments)})
           </button>
           <button class="open-btn" style="flex:1;" onclick="window.open('${p.link}','_blank')">Buka Link</button>
         </div>
@@ -759,6 +757,22 @@ function formatWIB(dateStr){
 
 // INITIAL
 fetchPosts();
+
+// Scroll otomatis ke post jika ada ?post=
+const postIdFromURL = getPostIdFromURL();
+if(postIdFromURL){
+  setTimeout(()=>{
+    const el = document.getElementById(postIdFromURL);
+    if(el){
+      openTab('home');  // buka tab home dulu
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+      el.style.boxShadow = "0 0 0 3px #2563eb inset";
+      setTimeout(()=>{ el.style.boxShadow=""; },2000);
+    }
+  }, 300); // delay supaya feed sudah ter-render
+}
+
+
 </script>
 </body>
 </html>
